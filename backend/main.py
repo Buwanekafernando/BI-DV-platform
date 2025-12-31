@@ -1,33 +1,61 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-import os
-import uuid
-import shutil
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+from database import engine, Base
+from config import settings
+from routers import (
+    auth_router,
+    datasets_router,
+    query_router,
+    charts_router,
+    reports_router
+)
 
-app = FastAPI(title="BI Software Backend")
+# Create database tables
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    Base.metadata.create_all(bind=engine)
+    yield
+    # Shutdown
+    pass
 
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# Initialize FastAPI app
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description="BI Analytics Platform - Power BI-like data analysis and visualization",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(auth_router)
+app.include_router(datasets_router)
+app.include_router(query_router)
+app.include_router(charts_router)
+app.include_router(reports_router)
+
+# Root endpoint
 @app.get("/")
 def root():
-    return {"message": "BI Software Backend is running"}
-
-@app.post("/upload")
-async def upload_csv(file: UploadFile = File(...)):
-    # Validate file type
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
-
-    # Generate unique dataset ID
-    dataset_id = str(uuid.uuid4())
-
-    # Save file
-    file_path = os.path.join(UPLOAD_DIR, f"{dataset_id}.csv")
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
     return {
-        "message": "File uploaded successfully",
-        "dataset_id": dataset_id,
-        "filename": file.filename
+        "message": "BI Analytics Platform API",
+        "version": "1.0.0",
+        "docs": "/docs"
     }
+
+# Health check endpoint
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+

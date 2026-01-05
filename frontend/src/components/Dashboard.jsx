@@ -10,6 +10,26 @@ function Dashboard({ datasetId }) {
         setCharts([...charts, { id: Date.now() }]);
     };
 
+    const dashboardState = {
+        name: "Sales Overview",
+        dataset_id: datasetId,
+        filters: filters,
+        charts: charts.map(c => ({
+            chart_type: c.chartType,
+            x_axis: c.xAxis,
+            y_axis: c.yAxis,
+            aggregation: c.aggregation
+        })),
+        layout: { columns: 2 }
+    };
+
+    const saveDashboard = async () => {
+        await api.post("/dashboards", dashboardState);
+        alert("Dashboard saved successfully");
+    };
+
+
+
     return (
         <div style={{ marginTop: "40px" }}>
             <h2>Dashboard</h2>
@@ -38,6 +58,8 @@ function Dashboard({ datasetId }) {
                     </div>
                 ))}
             </div>
+
+            <button onClick={saveDashboard}>Save Dashboard</button>
         </div>
     );
 }

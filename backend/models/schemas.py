@@ -151,3 +151,17 @@ class ReportResponse(BaseModel):
     file_path: str
     download_url: str
     created_at: datetime
+
+
+class ChartConfig(BaseModel):
+    chart_type: str
+    x_axis: str
+    y_axis: str
+    aggregation: str
+
+class DashboardCreate(BaseModel):
+    name: str
+    dataset_id: str
+    filters: Optional[Dict]
+    charts: List[ChartConfig]
+    layout: Optional[Dict]

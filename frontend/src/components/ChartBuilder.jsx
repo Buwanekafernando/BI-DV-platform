@@ -27,7 +27,8 @@ function ChartBuilder({ datasetId }) {
             dataset_id: datasetId,
             x_axis: xAxis,
             y_axis: yAxis,
-            aggregation: aggregation
+            aggregation,
+            filters
         });
 
         setChartData(response.data.data);

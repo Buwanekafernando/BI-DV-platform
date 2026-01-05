@@ -9,7 +9,8 @@ from routers import (
     datasets_router,
     query_router,
     charts_router,
-    reports_router
+    reports_router,
+    dashboard_router
 )
 
 # Create database tables
@@ -44,6 +45,7 @@ app.include_router(datasets_router)
 app.include_router(query_router)
 app.include_router(charts_router)
 app.include_router(reports_router)
+app.include_router(dashboard_router)
 
 # Root endpoint
 @app.get("/")

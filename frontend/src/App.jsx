@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import api from "./services/api";
 import './App.css'
 import DatasetUpload from "./components/DatasetUpload";
+import DatasetProfile from "./components/DatasetProfile";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -22,9 +23,10 @@ function App() {
       <DatasetUpload onUploadSuccess={setDatasetId} />
 
       {datasetId && (
-        <p>
-          <strong>Dataset ID:</strong> {datasetId}
-        </p>
+        <>
+          <p><strong>Dataset ID:</strong> {datasetId}</p>
+          <DatasetProfile datasetId={datasetId} />
+        </>
       )}
     </div>
   )

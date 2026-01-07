@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import GridDashboard from "./GridDashboard";
 
 function DashboardList({ onSelect }) {
     const [dashboards, setDashboards] = useState([]);
-    
+
 
 
     useEffect(() => {
@@ -28,7 +29,10 @@ function DashboardList({ onSelect }) {
                     </li>
                 ))}
                 <button onClick={loadDashboard}>Load Dashboard</button>
+                
             </ul>
+            <GridDashboard datasetId={datasetId} />
+
         </div>
     );
 }

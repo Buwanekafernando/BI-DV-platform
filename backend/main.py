@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from database import engine, Base
 from config import settings
+
+
 from routers import (
     auth_router,
     datasets_router,
@@ -12,6 +14,7 @@ from routers import (
     reports_router,
     dashboard_router
 )
+from app.api import export
 
 # Create database tables
 @asynccontextmanager
@@ -46,6 +49,7 @@ app.include_router(query_router)
 app.include_router(charts_router)
 app.include_router(reports_router)
 app.include_router(dashboard_router)
+app.include_router(export.router)
 
 # Root endpoint
 @app.get("/")

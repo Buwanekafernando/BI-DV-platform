@@ -3,8 +3,8 @@ from seaborn import load_dataset
 
 
 
-from app.services.forecasting_service import forecast_time_series
-from app.services.jwt_dependency import get_current_user
+from services.forecasting_service import forecast_time_series
+from services.jwt_dependency import get_current_user
 
 
 router = APIRouter(prefix="/analytics")

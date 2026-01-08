@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
-from app.services.dashboard_service import get_dashboard
-from app.services.pdf_service import generate_dashboard_pdf
-from app.services.jwt_dependency import get_current_user
+from services.dashboard_service import get_dashboard
+from services.pdf_service import generate_dashboard_pdf
+from services.jwt_dependency import get_current_user
 import os
 
 router = APIRouter(prefix="/export")

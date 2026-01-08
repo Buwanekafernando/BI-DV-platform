@@ -1,5 +1,5 @@
 import json
-from app.database import execute_query, fetch_all, fetch_one
+from database import execute_query, fetch_all, fetch_one
 
 def save_dashboard(dashboard, user):
     query = """

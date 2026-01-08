@@ -1,8 +1,3 @@
-"""Initial database setup script
-
-This script creates the database tables and can be run manually
-if needed. The main.py application will also create tables on startup.
-"""
 
 from database import engine, Base
 from models.db_models import User, Dataset, Report

@@ -14,8 +14,8 @@ from routers import (
     reports_router,
     dashboard_router
 )
-from app.api import export
-from app.api import sharing
+from api import export
+from api import sharing
 
 # Create database tables
 @asynccontextmanager

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from services.jwt_dependency import get_current_user
+from utils.auth import get_current_user
 
 router = APIRouter(prefix="/share")
 

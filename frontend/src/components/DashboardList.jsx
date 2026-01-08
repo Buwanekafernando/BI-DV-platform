@@ -2,19 +2,18 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import GridDashboard from "./GridDashboard";
 
-function DashboardList({ onSelect }) {
+function DashboardList({ onSelect, datasetId }) {
     const [dashboards, setDashboards] = useState([]);
-
-
+    const [filters, setFilters] = useState({});
+    const [charts, setCharts] = useState([]);
 
     useEffect(() => {
-        api.get("/dashboards").then(res => setDashboards(res.data));
+        api.get("/dashboard/dashboards").then(res => setDashboards(res.data));
     }, []);
 
     const loadDashboard = async (dashboardId) => {
-        const res = await api.get(`/dashboards/${dashboardId}`);
-        setFilters(res.data.filters);
-        setCharts(res.data.charts);
+        const res = await api.get(`/dashboard/dashboards/${dashboardId}`);
+        onSelect(dashboardId, res.data);
     };
 
     return (
@@ -23,16 +22,13 @@ function DashboardList({ onSelect }) {
             <ul>
                 {dashboards.map(d => (
                     <li key={d.id}>
-                        <button onClick={() => onSelect(d.id)}>
+                        <button onClick={() => loadDashboard(d.id)}>
                             {d.name}
                         </button>
                     </li>
                 ))}
-                <button onClick={loadDashboard}>Load Dashboard</button>
-                
             </ul>
-            <GridDashboard datasetId={datasetId} />
-
+            {datasetId && <GridDashboard datasetId={datasetId} />}
         </div>
     );
 }

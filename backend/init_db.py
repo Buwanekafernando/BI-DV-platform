@@ -1,6 +1,6 @@
 
 from database import engine, Base
-from models.db_models import User, Dataset, Report
+from models.db_models import User, Dataset, Report, DashboardShare
 
 def init_db():
     """Initialize database tables"""

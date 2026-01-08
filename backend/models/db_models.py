@@ -9,8 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    full_name = Column(String, nullable=True)    role = Column(String, default="user")  # user, admin    created_at = Column(DateTime, default=datetime.utcnow)
 
     datasets = relationship("Dataset", back_populates="owner")
     reports = relationship("Report", back_populates="owner")
@@ -39,3 +38,15 @@ class Report(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="reports")
+
+class DashboardShare(Base):
+    __tablename__ = "dashboard_shares"
+
+    id = Column(Integer, primary_key=True, index=True)
+    dashboard_id = Column(String, ForeignKey("dashboards.id"), nullable=False)
+    shared_with_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    permission = Column(String, default="view")  # view, edit
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    dashboard = relationship("Dashboard")
+    shared_user = relationship("User")

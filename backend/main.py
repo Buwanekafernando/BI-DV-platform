@@ -7,7 +7,6 @@ from config import settings
 
 
 from routers import (
-    auth_router,
     datasets_router,
     query_router,
     charts_router,
@@ -44,7 +43,6 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth_router)
 app.include_router(datasets_router)
 app.include_router(query_router)
 app.include_router(charts_router)

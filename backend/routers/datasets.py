@@ -55,12 +55,10 @@ async def upload_dataset(
     # Create database record
     dataset = Dataset(
         id=dataset_id,
-        filename=f"{dataset_id}.csv",
-        original_filename=file.filename,
+        user_id=str(current_user.id),
+        name=file.filename,
         file_path=file_path,
-        file_size=file_size,
-        row_count=row_count,
-        user_id=current_user.id
+        schema_json=None  # Will be updated during profiling
     )
     
     db.add(dataset)
@@ -69,8 +67,7 @@ async def upload_dataset(
     
     return DatasetUploadResponse(
         dataset_id=dataset_id,
-        filename=file.filename,
-        file_size=file_size,
+        name=file.filename,
         message="File uploaded successfully"
     )
 

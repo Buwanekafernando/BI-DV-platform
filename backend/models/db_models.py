@@ -7,11 +7,9 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())
+    username = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
-    role = Column(String, default="user")  # user, admin
     created_at = Column(DateTime, server_default=func.now())
 
     datasets = relationship("Dataset", back_populates="owner")
@@ -20,36 +18,34 @@ class User(Base):
 class Dataset(Base):
     __tablename__ = "datasets"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())  # UNIQUEIDENTIFIER
-    filename = Column(String, nullable=False)
-    original_filename = Column(String, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())
+    user_id = Column(UNIQUEIDENTIFIER, ForeignKey("users.id"), nullable=False)
+    name = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
-    file_size = Column(Integer)
-    row_count = Column(Integer)
-    created_at = Column(DateTime, server_default=func.now())
-    user_id = Column(Integer, ForeignKey("users.id"))
+    schema_json = Column(String, nullable=True)  # NVARCHAR(MAX) for JSON
+    uploaded_at = Column(DateTime, server_default=func.now())
 
     owner = relationship("User", back_populates="datasets")
 
 class Report(Base):
     __tablename__ = "reports"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())  # UNIQUEIDENTIFIER
-    title = Column(String, nullable=False)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())
+    dashboard_id = Column(UNIQUEIDENTIFIER, ForeignKey("dashboards.id"), nullable=False)
+    report_type = Column(String, nullable=False)  # pdf, png, etc.
     file_path = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-    user_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="reports")
 
 class DashboardShare(Base):
     __tablename__ = "dashboard_shares"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, server_default=func.newid())
     dashboard_id = Column(UNIQUEIDENTIFIER, ForeignKey("dashboards.id"), nullable=False)
-    shared_with_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    shared_with_user_id = Column(UNIQUEIDENTIFIER, ForeignKey("users.id"), nullable=False)
     permission = Column(String, default="view")  # view, edit
-    created_at = Column(DateTime, server_default=func.now())
+    shared_at = Column(DateTime, server_default=func.now())
 
     dashboard = relationship("Dashboard")
     shared_user = relationship("User")

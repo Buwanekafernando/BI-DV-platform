@@ -5,18 +5,18 @@ from enum import Enum
 
 # ============= User Schemas =============
 class UserCreate(BaseModel):
+    username: str
     email: EmailStr
     password: str = Field(..., min_length=6)
-    full_name: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
-    id: int
+    id: str
+    username: str
     email: str
-    full_name: Optional[str]
     created_at: datetime
 
     class Config:
@@ -32,18 +32,16 @@ class TokenData(BaseModel):
 # ============= Dataset Schemas =============
 class DatasetUploadResponse(BaseModel):
     dataset_id: str
-    filename: str
-    file_size: int
+    name: str
     message: str
 
 class DatasetMetadata(BaseModel):
     id: str
-    filename: str
-    original_filename: str
-    file_size: int
-    row_count: Optional[int]
-    created_at: datetime
-    user_id: int
+    user_id: str
+    name: str
+    file_path: str
+    schema_json: Optional[str]
+    uploaded_at: datetime
 
     class Config:
         from_attributes = True
@@ -139,7 +137,7 @@ class ReportFormat(str, Enum):
     PDF = "pdf"
 
 class ReportRequest(BaseModel):
-    title: str
+    report_type: str  # pdf, png, etc.
     format: ReportFormat
     include_charts: Optional[bool] = False
     chart_configs: Optional[List[ChartRequest]] = []
@@ -147,9 +145,8 @@ class ReportRequest(BaseModel):
 
 class ReportResponse(BaseModel):
     report_id: str
-    title: str
+    report_type: str
     file_path: str
-    download_url: str
     created_at: datetime
 
 

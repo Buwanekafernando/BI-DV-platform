@@ -22,7 +22,7 @@ class DatasetManager:
         if not dataset:
             raise HTTPException(status_code=404, detail="Dataset not found")
         
-        if dataset.user_id != user.id:
+        if str(dataset.user_id) != str(user.id):
             raise HTTPException(
                 status_code=403,
                 detail="You don't have permission to access this dataset"
@@ -31,7 +31,7 @@ class DatasetManager:
         return dataset
     
     @staticmethod
-    def get_user_datasets(db: Session, user_id: int) -> List[Dataset]:
+    def get_user_datasets(db: Session, user_id: str) -> List[Dataset]:
         """Get all datasets for a user"""
         return db.query(Dataset).filter(Dataset.user_id == user_id).all()
     

@@ -61,10 +61,9 @@ async def get_current_user(
     if not user:
         # Create a demo user if not exists
         user = User(
+            username="demo",
             email="demo@example.com",
-            password_hash="dummy",
-            full_name="Demo User",
-            role="admin"
+            password_hash="dummy"
         )
         db.add(user)
         db.commit()

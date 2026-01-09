@@ -40,7 +40,7 @@ class DatasetMetadata(BaseModel):
     user_id: str
     name: str
     file_path: str
-    schema_json: Optional[str]
+    data_schema: Optional[str]
     uploaded_at: datetime
 
     class Config:

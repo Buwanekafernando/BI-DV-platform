@@ -13,7 +13,6 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     datasets = relationship("Dataset", back_populates="owner")
-    reports = relationship("Report", back_populates="owner")
 
 class Dataset(Base):
     __tablename__ = "datasets"
@@ -22,7 +21,7 @@ class Dataset(Base):
     user_id = Column(UNIQUEIDENTIFIER, ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
-    schema_json = Column(String, nullable=True)  # NVARCHAR(MAX) for JSON
+    data_schema = Column(String, nullable=True)  # NVARCHAR(MAX) for JSON
     uploaded_at = Column(DateTime, server_default=func.now())
 
     owner = relationship("User", back_populates="datasets")
@@ -35,8 +34,6 @@ class Report(Base):
     report_type = Column(String, nullable=False)  # pdf, png, etc.
     file_path = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-
-    owner = relationship("User", back_populates="reports")
 
 class DashboardShare(Base):
     __tablename__ = "dashboard_shares"

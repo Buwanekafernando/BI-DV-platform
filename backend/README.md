@@ -14,7 +14,7 @@ A comprehensive BI (Business Intelligence) platform backend built with FastAPI, 
 ## Tech Stack
 
 - **Framework**: FastAPI
-- **Database**: PostgreSQL (metadata) + Pandas (in-memory processing)
+- **Database**: Microsoft SQL Server (metadata) + Pandas (in-memory processing)
 - **Authentication**: JWT with bcrypt
 - **Data Processing**: Pandas, NumPy
 - **Visualization**: Matplotlib, Seaborn
@@ -25,7 +25,8 @@ A comprehensive BI (Business Intelligence) platform backend built with FastAPI, 
 ### Prerequisites
 
 - Python 3.9+
-- PostgreSQL
+- Microsoft SQL Server (or Docker container)
+- ODBC Driver 18 for SQL Server
 
 ### Installation
 
@@ -41,7 +42,7 @@ cp .env.example .env
 
 3. Update `.env` with your database credentials:
 ```
-DATABASE_URL=postgresql://user:password@localhost:5432/bi_platform
+DATABASE_URL=mssql+pyodbc://sa:YourPassword123@localhost/boc_bi_platform?driver=ODBC+Driver+18+for+SQL+Server
 SECRET_KEY=your_secret_key_here
 ```
 

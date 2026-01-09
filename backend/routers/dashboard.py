@@ -22,19 +22,19 @@ def save_dashboard(
 ):
     query = """
         INSERT INTO dashboards (user_id, name, dataset_id, filters, charts, layout)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        RETURNING id
+        OUTPUT INSERTED.id
+        VALUES (?, ?, ?, ?, ?, ?)
     """
     
     result = execute_query(
         query,
         (
-            str(user.id),
+            user.id,
             dashboard.name,
             dashboard.dataset_id,
-            json.dumps(dashboard.filters),
-            json.dumps([c.dict() for c in dashboard.charts]),
-            json.dumps(dashboard.layout)
+            json.dumps(dashboard.filters) if dashboard.filters else None,
+            json.dumps([c.dict() for c in dashboard.charts]) if dashboard.charts else None,
+            json.dumps(dashboard.layout) if dashboard.layout else None
         )
     )
     dashboard_id = result.fetchone()[0]
@@ -47,7 +47,7 @@ def list_dashboards(user: User = Depends(get_current_user)):
     query = """
         SELECT id, name, created_at
         FROM dashboards
-        WHERE user_id = %s
+        WHERE user_id = ?
         ORDER BY created_at DESC
     """
-    return fetch_all(query, (str(user.id),))
+    return fetch_all(query, (user.id,))

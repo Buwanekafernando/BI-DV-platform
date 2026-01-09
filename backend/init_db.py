@@ -1,6 +1,7 @@
 
 from database import engine, Base
 from models.db_models import User, Dataset, Report, DashboardShare
+from models.dashboard_model import Dashboard
 
 def init_db():
     """Initialize database tables"""

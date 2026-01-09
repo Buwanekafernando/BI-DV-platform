@@ -4,7 +4,7 @@ pandas
 numpy
 python-multipart
 sqlalchemy
-psycopg2-binary
+pyodbc
 alembic
 python-jose[cryptography]
 passlib[bcrypt]

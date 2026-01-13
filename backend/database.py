@@ -21,16 +21,31 @@ def get_db():
 
 def execute_query(query, params=None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or ())
+        if params is None:
+            result = conn.execute(text(query))
+        elif isinstance(params, (list, tuple)):
+            result = conn.exec_driver_sql(query, params)
+        else:
+            result = conn.execute(text(query), params)
         conn.commit()
         return result
 
 def fetch_all(query, params=None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or ())
+        if params is None:
+            result = conn.execute(text(query))
+        elif isinstance(params, (list, tuple)):
+            result = conn.exec_driver_sql(query, params)
+        else:
+            result = conn.execute(text(query), params)
         return result.fetchall()
 
 def fetch_one(query, params=None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or ())
+        if params is None:
+            result = conn.execute(text(query))
+        elif isinstance(params, (list, tuple)):
+            result = conn.exec_driver_sql(query, params)
+        else:
+            result = conn.execute(text(query), params)
         return result.fetchone()

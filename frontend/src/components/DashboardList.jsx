@@ -17,18 +17,31 @@ function DashboardList({ onSelect, datasetId }) {
     };
 
     return (
-        <div>
-            <h3>Saved Dashboards</h3>
-            <ul>
-                {dashboards.map(d => (
-                    <li key={d.id}>
-                        <button onClick={() => loadDashboard(d.id)}>
-                            {d.name}
-                        </button>
-                    </li>
-                ))}
-            </ul>
-            {datasetId && <GridDashboard datasetId={datasetId} />}
+        <div className="dashboard-list-container">
+            {/* <h3>Saved Dashboards</h3> - Title removed as it's usually handled by parent or empty state */}
+            {dashboards.length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {dashboards.map(d => (
+                        <li key={d.id} style={{ marginBottom: '8px' }}>
+                            <button
+                                onClick={() => loadDashboard(d.id)}
+                                className="btn btn-secondary"
+                                style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left' }}
+                            >
+                                <span style={{ marginRight: '8px' }}>📊</span> {d.name}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No saved dashboards found.</p>
+            )}
+
+            {datasetId && (
+                <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
+                    <GridDashboard datasetId={datasetId} />
+                </div>
+            )}
         </div>
     );
 }

@@ -63,38 +63,46 @@ function ChartBuilder({ datasetId }) {
     const dataKeyY = `${yAxis}_${aggregation}`;
 
     return (
-        <div style={{ marginTop: "40px", padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
-            <h3>Chart Builder</h3>
+        <div className="chart-builder">
+            <h3 style={{ marginBottom: "20px", color: "var(--color-secondary)" }}>Chart Builder</h3>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
-                <div>
-                    <label>Chart Type</label>
-                    <select value={chartType} onChange={e => setChartType(e.target.value)} style={{ width: "100%", padding: "5px" }}>
+            <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "20px",
+                marginBottom: "20px",
+                background: "var(--color-background-surface)",
+                padding: "20px",
+                borderRadius: "var(--radius-md)"
+            }}>
+                <div className="form-group">
+                    <label className="form-label">Chart Type</label>
+                    <select value={chartType} onChange={e => setChartType(e.target.value)} className="form-select">
                         <option value="bar">Bar Chart</option>
                         <option value="line">Line Chart</option>
                     </select>
                 </div>
-                <div>
-                    <label>X-Axis (Group By)</label>
-                    <select value={xAxis} onChange={e => setXAxis(e.target.value)} style={{ width: "100%", padding: "5px" }}>
+                <div className="form-group">
+                    <label className="form-label">X-Axis (Group By)</label>
+                    <select value={xAxis} onChange={e => setXAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
                             <option key={col} value={col}>{col}</option>
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label>Y-Axis (Value)</label>
-                    <select value={yAxis} onChange={e => setYAxis(e.target.value)} style={{ width: "100%", padding: "5px" }}>
+                <div className="form-group">
+                    <label className="form-label">Y-Axis (Value)</label>
+                    <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
                             <option key={col} value={col}>{col}</option>
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label>Aggregation</label>
-                    <select value={aggregation} onChange={e => setAggregation(e.target.value)} style={{ width: "100%", padding: "5px" }}>
+                <div className="form-group">
+                    <label className="form-label">Aggregation</label>
+                    <select value={aggregation} onChange={e => setAggregation(e.target.value)} className="form-select">
                         <option value="sum">Sum</option>
                         <option value="avg">Average</option>
                         <option value="count">Count</option>
@@ -102,22 +110,29 @@ function ChartBuilder({ datasetId }) {
                         <option value="max">Max</option>
                     </select>
                 </div>
-                <div>
-                    <label>Sort Order</label>
-                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} style={{ width: "100%", padding: "5px" }}>
+                <div className="form-group">
+                    <label className="form-label">Sort Order</label>
+                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="form-select">
                         <option value="desc">Descending</option>
                         <option value="asc">Ascending</option>
                     </select>
                 </div>
+
+                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button
+                        onClick={generateChart}
+                        disabled={loading}
+                        className="btn btn-primary"
+                        style={{ width: '100%' }}
+                    >
+                        {loading ? "Generating..." : "Generate Chart"}
+                    </button>
+                </div>
             </div>
 
-            <button onClick={generateChart} disabled={loading} style={{ padding: "10px 20px", cursor: "pointer" }}>
-                {loading ? "Generating..." : "Generate Chart"}
-            </button>
+            {error && <div className="message-box message-error">{error}</div>}
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
-            <div style={{ marginTop: "30px", height: "400px" }}>
+            <div style={{ marginTop: "30px", height: "400px", border: "1px dashed var(--border-color)", padding: "10px", borderRadius: "var(--radius-md)" }}>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         {chartType === "bar" ? (
@@ -127,7 +142,7 @@ function ChartBuilder({ datasetId }) {
                                 <YAxis />
                                 <Tooltip />
                                 <Legend />
-                                <Bar dataKey={dataKeyY} fill="#8884d8" name={`${aggregation.toUpperCase()} of ${yAxis}`} />
+                                <Bar dataKey={dataKeyY} fill="var(--color-primary)" name={`${aggregation.toUpperCase()} of ${yAxis}`} />
                             </BarChart>
                         ) : (
                             <LineChart data={chartData}>
@@ -136,12 +151,15 @@ function ChartBuilder({ datasetId }) {
                                 <YAxis />
                                 <Tooltip />
                                 <Legend />
-                                <Line type="monotone" dataKey={dataKeyY} stroke="#82ca9d" name={`${aggregation.toUpperCase()} of ${yAxis}`} />
+                                <Line type="monotone" dataKey={dataKeyY} stroke="var(--color-tertiary)" strokeWidth={2} name={`${aggregation.toUpperCase()} of ${yAxis}`} />
                             </LineChart>
                         )}
                     </ResponsiveContainer>
                 ) : (
-                    <p style={{ textAlign: "center", color: "#888" }}>Generate a chart to view the result</p>
+                    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-muted)", flexDirection: "column" }}>
+                        <span style={{ fontSize: "3rem", marginBottom: "1rem" }}>📊</span>
+                        <p>Select options and click "Generate Chart" to view the result</p>
+                    </div>
                 )}
             </div>
         </div>

@@ -35,22 +35,47 @@ function DatasetUpload({ onUploadSuccess }) {
     };
 
     return (
-        <div style={{ padding: "20px", border: "1px solid #ccc" }}>
-            <h3>Upload CSV Dataset</h3>
+        <div className="dataset-upload">
+            <h3 style={{ marginBottom: '1rem', color: 'var(--color-tertiary)' }}>Upload CSV Dataset</h3>
 
-            <input
-                type="file"
-                accept=".csv"
-                onChange={(e) => setFile(e.target.files[0])}
-            />
+            <div className="file-upload-zone">
+                <input
+                    type="file"
+                    accept=".csv"
+                    id="file-upload"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    style={{ display: 'none' }} // Hide default input
+                />
+                <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block', width: '100%' }}>
+                    {file ? (
+                        <div style={{ fontWeight: '600', color: 'var(--color-tertiary)' }}>
+                            📄 {file.name}
+                        </div>
+                    ) : (
+                        <div>
+                            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>☁️</span>
+                            <span style={{ color: 'var(--color-text-muted)' }}>Click to select a CSV file</span>
+                        </div>
+                    )}
+                </label>
+            </div>
 
-            <br /><br />
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                    onClick={handleUpload}
+                    disabled={loading || !file}
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
+                >
+                    {loading ? "Uploading..." : "Upload Dataset"}
+                </button>
+            </div>
 
-            <button onClick={handleUpload} disabled={loading}>
-                {loading ? "Uploading..." : "Upload"}
-            </button>
-
-            <p>{message}</p>
+            {message && (
+                <div className={`message-box ${message.includes("success") ? "message-success" : "message-error"}`}>
+                    {message}
+                </div>
+            )}
         </div>
     );
 }

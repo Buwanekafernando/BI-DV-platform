@@ -10,9 +10,9 @@ function ExportButtons({ dashboardId }) {
   };
 
   return (
-    <div style={{ marginBottom: "20px" }}>
-      <button onClick={exportPDF}>📄 Export PDF</button>
-      <button onClick={() => exportAsImage("dashboard-canvas")}>
+    <div style={{ display: 'flex', gap: '10px' }}>
+      <button onClick={exportPDF} className="btn btn-secondary">📄 Export PDF</button>
+      <button onClick={() => exportAsImage("dashboard-canvas")} className="btn btn-secondary">
         🖼 Export Image
       </button>
     </div>

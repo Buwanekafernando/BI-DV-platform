@@ -30,32 +30,46 @@ function DatasetProfile({ datasetId }) {
     if (!profile) return null;
 
     return (
-        <div style={{ marginTop: "30px", border: "1px solid #ddd", padding: "20px", borderRadius: "8px" }}>
-            <h3>Dataset Profile</h3>
-            <p><strong>Total Rows:</strong> {profile.total_rows} | <strong>Total Columns:</strong> {profile.total_columns}</p>
+        <div className="dataset-profile">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                    <span style={{ marginRight: '20px', fontSize: '1.1rem' }}><strong>Total Rows:</strong> {profile.total_rows}</span>
+                    <span style={{ fontSize: '1.1rem' }}><strong>Total Columns:</strong> {profile.total_columns}</span>
+                </div>
+            </div>
 
-            <table border="1" cellPadding="8" style={{ width: "100%", borderCollapse: "collapse", borderColor: "#ddd" }}>
-                <thead>
-                    <tr style={{ backgroundColor: "#f5f5f5" }}>
-                        <th>Column Name</th>
-                        <th>Data Type</th>
-                        <th>Missing Values</th>
-                        <th>Missing %</th>
-                        <th>Unique Values</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {profile.columns.map((col, index) => (
-                        <tr key={index}>
-                            <td>{col.name}</td>
-                            <td>{col.dtype}</td>
-                            <td>{col.missing_count}</td>
-                            <td>{col.missing_percentage.toFixed(2)}%</td>
-                            <td>{col.unique_count}</td>
+            <div style={{ overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Data Type</th>
+                            <th>Missing Values</th>
+                            <th>Missing %</th>
+                            <th>Unique Values</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {profile.columns.map((col, index) => (
+                            <tr key={index}>
+                                <td>{col.name}</td>
+                                <td><span style={{
+                                    padding: '2px 6px',
+                                    background: 'var(--color-background-surface)',
+                                    fontSize: '0.85rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--border-color)'
+                                }}>{col.dtype}</span></td>
+                                <td style={{ color: col.missing_count > 0 ? 'var(--color-error)' : 'inherit' }}>
+                                    {col.missing_count}
+                                </td>
+                                <td>{col.missing_percentage.toFixed(2)}%</td>
+                                <td>{col.unique_count}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

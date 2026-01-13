@@ -26,93 +26,92 @@ function App() {
 
   // Modern BI Layout
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", fontFamily: "Segoe UI, sans-serif" }}>
+    <div className="app-container">
       {/* Top Header */}
-      <header style={{
-        height: "50px",
-        background: "#f3f2f1",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 15px",
-        borderBottom: "1px solid #e1dfdd"
-      }}>
-        <img src={boclogo} alt="BOC Logo" style={{ height: "30px", marginRight: "10px" }} />
-        <h1 style={{ fontSize: "16px", fontWeight: "600", color: "#323130", margin: 0 }}>BOC BI Platform</h1>
+      <header className="app-header">
+        <img src={boclogo} alt="BOC Logo" className="header-logo" />
+        <h1 className="header-title">BOC BI Platform</h1>
       </header>
 
       {/* Main Container */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-
+      <div className="app-body">
         {/* Sidebar Navigation - Left Rail */}
         {datasetId && (
-          <nav style={{
-            width: "48px",
-            background: "#252423",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            paddingTop: "10px"
-          }}>
-            <NavButton
-              active={currentView === "dashboard"}
-              onClick={() => setCurrentView("dashboard")}
-              icon="📊"
-              label="Report"
-            />
-            <NavButton
-              active={currentView === "data"}
-              onClick={() => setCurrentView("data")}
-              icon="🔢"
-              label="Data"
-            />
-            <NavButton
-              active={currentView === "analytics"}
-              onClick={() => setCurrentView("analytics")}
-              icon="📈"
-              label="Analytics"
-            />
+          <nav className="app-sidebar">
+            <div className="nav-section">
+              <NavButton
+                active={currentView === "dashboard"}
+                onClick={() => setCurrentView("dashboard")}
+                icon="📊"
+                label="Report View"
+              />
+              <NavButton
+                active={currentView === "data"}
+                onClick={() => setCurrentView("data")}
+                icon="🔢"
+                label="Data View"
+              />
+              <NavButton
+                active={currentView === "analytics"}
+                onClick={() => setCurrentView("analytics")}
+                icon="📈"
+                label="Analytics"
+              />
+            </div>
           </nav>
         )}
 
         {/* Content Area */}
-        <main style={{ flex: 1, padding: "0", background: "#faf9f8", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <main className="main-content">
+          <div className="page-container">
+            {!datasetId ? (
+              <div className="welcome-section">
+                <div className="card" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', padding: '4rem 2rem' }}>
+                  <h2 style={{ fontSize: '2.5rem', color: 'var(--color-secondary)', marginBottom: '1rem' }}>Welcome to BOC BI</h2>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '3rem' }}>
+                    Unlock insights from your data with our advanced analytics platform.
+                  </p>
 
-          {!datasetId ? (
-            <div style={{ maxWidth: "800px", margin: "40px auto", padding: "20px", overflowY: "auto" }}>
-              <h2 style={{ color: "#323130" }}>Welcome to BOC BI</h2>
-              <p style={{ color: "#605e5c", marginBottom: "30px" }}>Get started by uploading your data or opening a saved dashboard.</p>
+                  <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
+                    <DatasetUpload onUploadSuccess={handleUploadSuccess} />
+                  </div>
 
-              <div style={{ background: "white", padding: "30px", borderRadius: "2px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: "30px", borderTop: "3px solid #0078d4" }}>
-                <DatasetUpload onUploadSuccess={handleUploadSuccess} />
-              </div>
-
-              <div style={{ background: "white", padding: "30px", borderRadius: "2px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
-                <h3 style={{ marginTop: 0 }}>Recent Dashboards</h3>
-                <DashboardList onSelect={handleDashboardSelect} datasetId={datasetId} />
-              </div>
-            </div>
-          ) : (
-            <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-              {currentView === "data" && (
-                <div>
-                  <h2 style={{ marginBottom: "20px", fontSize: "20px" }}>Data View</h2>
-                  <DatasetProfile datasetId={datasetId} />
+                  <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
+                    <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>📂</span> Recent Dashboards
+                    </h3>
+                    <DashboardList onSelect={handleDashboardSelect} datasetId={datasetId} />
+                  </div>
                 </div>
-              )}
+              </div>
+            ) : (
+              <>
+                {currentView === "data" && (
+                  <div className="fade-in">
+                    <h2 className="section-title">Data Profile</h2>
+                    <div className="card">
+                      <DatasetProfile datasetId={datasetId} />
+                    </div>
+                  </div>
+                )}
 
-              {currentView === "dashboard" && (
-                <Dashboard datasetId={datasetId} />
-              )}
+                {currentView === "dashboard" && (
+                  <div className="fade-in">
+                    <Dashboard datasetId={datasetId} />
+                  </div>
+                )}
 
-              {currentView === "analytics" && (
-                <div>
-                  <h2 style={{ marginBottom: "20px", fontSize: "20px" }}>Advanced Analytics</h2>
-                  <AdvancedAnalytics datasetId={datasetId} />
-                </div>
-              )}
-            </div>
-          )}
-
+                {currentView === "analytics" && (
+                  <div className="fade-in">
+                    <h2 className="section-title">Advanced Analytics</h2>
+                    <div className="card">
+                      <AdvancedAnalytics datasetId={datasetId} />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </main>
       </div>
     </div>
@@ -122,25 +121,12 @@ function App() {
 function NavButton({ active, onClick, icon, label }) {
   return (
     <button
+      className={`nav-button ${active ? 'active' : ''}`}
       onClick={onClick}
       title={label}
-      style={{
-        background: active ? "#3b3a39" : "transparent",
-        border: "none",
-        borderLeft: active ? "3px solid #0078d4" : "3px solid transparent",
-        width: "100%",
-        height: "48px",
-        color: "white",
-        fontSize: "18px",
-        cursor: "pointer",
-        marginBottom: "5px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        transition: "background 0.2s"
-      }}
     >
-      {icon}
+      <span className="nav-icon">{icon}</span>
+      <span className="nav-label">{label}</span>
     </button>
   )
 }

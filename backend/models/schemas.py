@@ -91,10 +91,19 @@ class AggregationRequest(BaseModel):
     column: str
     function: AggregationType
 
+class SortOrder(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+class SortRequest(BaseModel):
+    column: str
+    order: SortOrder = SortOrder.ASC
+
 class QueryRequest(BaseModel):
     filters: Optional[List[FilterCondition]] = []
     group_by: Optional[List[str]] = []
     aggregations: Optional[List[AggregationRequest]] = []
+    sort_by: Optional[List[SortRequest]] = []
     limit: Optional[int] = 1000
 
 class QueryResponse(BaseModel):

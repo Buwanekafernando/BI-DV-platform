@@ -23,6 +23,22 @@ class QueryEngine:
             # Aggregations without grouping
             df = QueryEngine._apply_global_aggregations(df, query.aggregations)
         
+        # Apply sorting
+        if query.sort_by:
+            sort_cols = [s.column for s in query.sort_by]
+            ascending = [s.order == "asc" for s in query.sort_by]
+            # Ensure columns exist
+            valid_cols = [c for c in sort_cols if c in df.columns]
+            if valid_cols:
+                # Adjust ascending list to match valid_cols length if some were invalid (though we should probably validate earlier)
+                # But for safety, let's just zip and filter
+                sort_params = [(c, a) for c, a in zip(sort_cols, ascending) if c in df.columns]
+                if sort_params:
+                     df = df.sort_values(
+                         by=[p[0] for p in sort_params],
+                         ascending=[p[1] for p in sort_params]
+                     )
+
         # Apply limit
         if query.limit:
             df = df.head(query.limit)

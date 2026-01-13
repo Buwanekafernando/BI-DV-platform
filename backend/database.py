@@ -38,7 +38,7 @@ def fetch_all(query, params=None):
             result = conn.exec_driver_sql(query, params)
         else:
             result = conn.execute(text(query), params)
-        return result.fetchall()
+        return [dict(row._mapping) for row in result.fetchall()]
 
 def fetch_one(query, params=None):
     with engine.connect() as conn:
@@ -48,4 +48,5 @@ def fetch_one(query, params=None):
             result = conn.exec_driver_sql(query, params)
         else:
             result = conn.execute(text(query), params)
-        return result.fetchone()
+        row = result.fetchone()
+        return dict(row._mapping) if row else None

@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import './App.css'
 import DatasetUpload from "./components/DatasetUpload";
+import DatasetList from "./components/DatasetList";
 import DatasetProfile from "./components/DatasetProfile";
 import ChartBuilder from "./components/ChartBuilder";
 import Dashboard from './components/Dashboard';
 import DashboardList from './components/DashboardList';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
+import Login from './components/Login';
 import boclogo from './assets/boclogo.png';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-function App() {
+function MainApp() {
+  const { user, logout } = useAuth();
   const [datasetId, setDatasetId] = useState(null);
   const [currentView, setCurrentView] = useState("data"); // 'data', 'dashboard', 'analytics'
   const [selectedDashboard, setSelectedDashboard] = useState(null);
@@ -24,13 +28,24 @@ function App() {
     setCurrentView("dashboard");
   };
 
+  // If not logged in, show Login screen
+  if (!user) {
+    return <Login />;
+  }
+
   // Modern BI Layout
   return (
     <div className="app-container">
       {/* Top Header */}
-      <header className="app-header">
-        <img src={boclogo} alt="BOC Logo" className="header-logo" />
-        <h1 className="header-title">BOC BI Platform</h1>
+      <header className="app-header" style={{ justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img src={boclogo} alt="BOC Logo" className="header-logo" />
+          <h1 className="header-title">BOC BI Platform</h1>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Welcome, {user.username || user.email}</span>
+          <button onClick={logout} className="btn" style={{ padding: '5px 10px', fontSize: '0.9rem', border: '1px solid var(--border-color)' }}>Logout</button>
+        </div>
       </header>
 
       {/* Main Container */}
@@ -77,10 +92,21 @@ function App() {
                   </div>
 
                   <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
-                    <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>📂</span> Recent Dashboards
-                    </h3>
-                    <DashboardList onSelect={handleDashboardSelect} datasetId={datasetId} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                      <div>
+                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>📄</span> Your Datasets
+                        </h3>
+                        <DatasetList onSelect={handleUploadSuccess} />
+                      </div>
+                      <div>
+                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>📂</span> Your Dashboards
+                        </h3>
+                        <DashboardList onSelect={handleDashboardSelect} datasetId={datasetId} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -129,6 +155,14 @@ function NavButton({ active, onClick, icon, label }) {
       <span className="nav-label">{label}</span>
     </button>
   )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
 }
 
 export default App

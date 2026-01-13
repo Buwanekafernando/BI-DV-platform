@@ -38,11 +38,11 @@ class DatasetUploadResponse(BaseModel):
     message: str
 
 class DatasetMetadata(BaseModel):
-    id: str
-    user_id: str
+    id: UUID
+    user_id: Optional[UUID]
     name: str
     file_path: str
-    data_schema: Optional[str]
+    schema_json: Optional[str]
     uploaded_at: datetime
 
     class Config:

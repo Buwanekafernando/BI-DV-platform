@@ -17,7 +17,7 @@ function DatasetUpload({ onUploadSuccess }) {
 
         try {
             setLoading(true);
-            const response = await api.post("/upload", formData, {
+            const response = await api.post("/datasets/upload", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },

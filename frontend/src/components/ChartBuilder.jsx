@@ -20,10 +20,10 @@ function ChartBuilder({ datasetId }) {
     useEffect(() => {
         if (!datasetId) return;
 
-        // Correct endpoint: /datasets/{id}/profile
         api.get(`/datasets/${datasetId}/profile`)
             .then(res => {
-                setColumns(res.data.columns.map(c => c.name));
+                // Store full column objects: { name, dtype, ... }
+                setColumns(res.data.columns);
             })
             .catch(err => console.error("Failed to load columns", err));
     }, [datasetId]);
@@ -33,6 +33,16 @@ function ChartBuilder({ datasetId }) {
             setError("Please select both X and Y axes");
             return;
         }
+
+        // Validation: Check if aggregation is valid for the selected Y column
+        const yCol = columns.find(c => c.name === yAxis);
+        const isNumeric = yCol && (yCol.dtype === 'int64' || yCol.dtype === 'float64');
+
+        if (!isNumeric && aggregation !== 'count') {
+            setError(`Cannot apply '${aggregation}' on non-numeric column '${yAxis}'. Please use 'Count'.`);
+            return;
+        }
+
         setError("");
         setLoading(true);
 
@@ -43,6 +53,7 @@ function ChartBuilder({ datasetId }) {
                 aggregations: [
                     { column: yAxis, function: aggregation }
                 ],
+                // For string columns we can't sort by sum/avg, so default to count or the column itself
                 sort_by: [
                     { column: `${yAxis}_${aggregation}`, order: sortOrder }
                 ],
@@ -52,7 +63,7 @@ function ChartBuilder({ datasetId }) {
             const response = await api.post(`/query/${datasetId}`, payload);
             setChartData(response.data.data);
         } catch (err) {
-            setError("Failed to generate chart");
+            setError("Failed to generate chart. Ensure your data supports the selected aggregation.");
             console.error(err);
         } finally {
             setLoading(false);
@@ -87,7 +98,7 @@ function ChartBuilder({ datasetId }) {
                     <select value={xAxis} onChange={e => setXAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
-                            <option key={col} value={col}>{col}</option>
+                            <option key={col.name} value={col.name}>{col.name} ({col.dtype})</option>
                         ))}
                     </select>
                 </div>
@@ -96,7 +107,7 @@ function ChartBuilder({ datasetId }) {
                     <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
-                            <option key={col} value={col}>{col}</option>
+                            <option key={col.name} value={col.name}>{col.name} ({col.dtype})</option>
                         ))}
                     </select>
                 </div>

@@ -55,6 +55,13 @@ function MainApp() {
           <nav className="app-sidebar">
             <div className="nav-section">
               <NavButton
+                active={false}
+                onClick={() => setDatasetId(null)}
+                icon="🏠"
+                label="Home"
+              />
+              <div style={{ margin: '10px 0', borderBottom: '1px solid var(--border-color)' }}></div>
+              <NavButton
                 active={currentView === "dashboard"}
                 onClick={() => setCurrentView("dashboard")}
                 icon="📊"

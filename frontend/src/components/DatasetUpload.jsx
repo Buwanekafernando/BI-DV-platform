@@ -6,9 +6,13 @@ function DatasetUpload({ onUploadSuccess }) {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
+    const triggerFileSelect = () => {
+        document.getElementById("file-upload").click();
+    };
+
     const handleUpload = async () => {
         if (!file) {
-            setMessage("Please select a CSV file");
+            triggerFileSelect();
             return;
         }
 
@@ -17,17 +21,16 @@ function DatasetUpload({ onUploadSuccess }) {
 
         try {
             setLoading(true);
-            const response = await api.post("/datasets/upload", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            setMessage(""); // Clear old messages
+            // Using trailing slash to prevent 307 redirect issues with POST
+            const response = await api.post("/datasets/upload/", formData);
 
             setMessage("Upload successful!");
             onUploadSuccess(response.data.dataset_id);
+            setFile(null); // Reset after success
         } catch (error) {
             setMessage(
-                error.response?.data?.detail || "Upload failed"
+                error.response?.data?.detail || "Upload failed. Please check the file format."
             );
         } finally {
             setLoading(false);
@@ -63,11 +66,15 @@ function DatasetUpload({ onUploadSuccess }) {
             <div style={{ marginTop: '16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button
                     onClick={handleUpload}
-                    disabled={loading || !file}
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
+                    disabled={loading}
+                    className={`btn ${!file ? 'btn-secondary' : 'btn-primary'}`}
+                    style={{
+                        width: '100%',
+                        backgroundColor: !file ? '#6c757d' : 'var(--color-primary)',
+                        cursor: loading ? 'not-allowed' : 'pointer'
+                    }}
                 >
-                    {loading ? "Uploading..." : "Upload Dataset"}
+                    {loading ? "Uploading..." : (file ? "Upload Dataset" : "Select & Upload")}
                 </button>
             </div>
 

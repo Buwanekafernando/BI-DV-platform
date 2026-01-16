@@ -1,13 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
 import ChartBuilder from "./ChartBuilder";
 import FilterPanel from "./FilterPanel";
 import html2canvas from "html2canvas";
 import ExportButtons from "./ExportButtons";
 
-function Dashboard({ datasetId }) {
+function Dashboard({ datasetId, initialData }) {
     const [charts, setCharts] = useState([]);
     const [filters, setFilters] = useState({});
+    const [dashboardName, setDashboardName] = useState("Sales Overview");
+
+    // Load initial data if provided
+    useEffect(() => {
+        if (initialData) {
+            if (initialData.charts) setCharts(initialData.charts.map((c, index) => ({ ...c, id: c.id || Date.now() + index })));
+            if (initialData.filters) setFilters(initialData.filters);
+            if (initialData.name) setDashboardName(initialData.name);
+        }
+    }, [initialData]);
 
     const addChart = () => {
         setCharts([...charts, {
@@ -35,7 +45,7 @@ function Dashboard({ datasetId }) {
             });
             const link = document.createElement("a");
             link.href = image.toDataURL("image/png");
-            link.download = `${dashboardState.name || "dashboard"}.png`;
+            link.download = `${dashboardName || "dashboard"}.png`;
             link.click();
         } catch (e) {
             console.error("Failed to export PNG", e);
@@ -44,8 +54,8 @@ function Dashboard({ datasetId }) {
     };
 
     const saveDashboard = async () => {
-        const dashboardState = {
-            name: "Sales Overview",
+        const payload = {
+            name: dashboardName,
             dataset_id: datasetId,
             filters: filters,
             charts: charts.map(c => ({
@@ -58,7 +68,7 @@ function Dashboard({ datasetId }) {
         };
 
         try {
-            await api.post("/dashboards/", dashboardState);
+            await api.post("/dashboards/", payload);
             alert("Dashboard saved successfully! Preparing download...");
             // Automatically trigger download after save
             setTimeout(downloadAsPNG, 500);

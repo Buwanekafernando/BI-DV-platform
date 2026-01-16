@@ -130,7 +130,7 @@ function MainApp() {
 
                 {currentView === "dashboard" && (
                   <div className="fade-in">
-                    <Dashboard datasetId={datasetId} />
+                    <Dashboard datasetId={datasetId} initialData={selectedDashboard} />
                   </div>
                 )}
 

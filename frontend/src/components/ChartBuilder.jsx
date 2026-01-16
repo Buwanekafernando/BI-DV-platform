@@ -6,7 +6,7 @@ import {
 
 import api from "../services/api";
 
-function ChartBuilder({ datasetId }) {
+function ChartBuilder({ datasetId, onUpdate }) {
     const [columns, setColumns] = useState([]);
     const [xAxis, setXAxis] = useState("");
     const [yAxis, setYAxis] = useState("");
@@ -27,6 +27,18 @@ function ChartBuilder({ datasetId }) {
             })
             .catch(err => console.error("Failed to load columns", err));
     }, [datasetId]);
+
+    // Sync state back to parent for saving
+    useEffect(() => {
+        if (onUpdate) {
+            onUpdate({
+                chart_type: chartType,
+                x_axis: xAxis,
+                y_axis: yAxis,
+                aggregation: aggregation
+            });
+        }
+    }, [chartType, xAxis, yAxis, aggregation]);
 
     const generateChart = async () => {
         if (!xAxis || !yAxis) {

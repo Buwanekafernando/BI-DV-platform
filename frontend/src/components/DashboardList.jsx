@@ -8,12 +8,25 @@ function DashboardList({ onSelect, datasetId }) {
     const [charts, setCharts] = useState([]);
 
     useEffect(() => {
-        api.get("/dashboard/dashboards").then(res => setDashboards(res.data));
+        api.get("/dashboards").then(res => setDashboards(res.data));
     }, []);
 
     const loadDashboard = async (dashboardId) => {
-        const res = await api.get(`/dashboard/dashboards/${dashboardId}`);
+        const res = await api.get(`/dashboards/${dashboardId}`);
         onSelect(dashboardId, res.data);
+    };
+
+    const handleDelete = async (id, e) => {
+        e.stopPropagation();
+        if (window.confirm("Are you sure you want to delete this dashboard?")) {
+            try {
+                await api.delete(`/dashboards/${id}`);
+                setDashboards(prev => prev.filter(d => d.id !== id));
+            } catch (err) {
+                console.error("Failed to delete dashboard", err);
+                alert("Failed to delete dashboard");
+            }
+        }
     };
 
     return (
@@ -26,9 +39,19 @@ function DashboardList({ onSelect, datasetId }) {
                             <button
                                 onClick={() => loadDashboard(d.id)}
                                 className="btn btn-secondary"
-                                style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left' }}
+                                style={{ width: '100%', justifyContent: 'space-between', textAlign: 'left', display: 'flex', alignItems: 'center' }}
                             >
-                                <span style={{ marginRight: '8px' }}>📊</span> {d.name}
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span style={{ marginRight: '8px' }}>📊</span> {d.name}
+                                </div>
+                                <button
+                                    onClick={(e) => handleDelete(d.id, e)}
+                                    className="btn-icon"
+                                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}
+                                    title="Delete Dashboard"
+                                >
+                                    🗑️
+                                </button>
                             </button>
                         </li>
                     ))}

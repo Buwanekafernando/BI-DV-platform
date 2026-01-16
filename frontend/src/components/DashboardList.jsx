@@ -46,11 +46,19 @@ function DashboardList({ onSelect, datasetId }) {
                                 </div>
                                 <button
                                     onClick={(e) => handleDelete(d.id, e)}
-                                    className="btn-icon"
-                                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}
+                                    style={{
+                                        backgroundColor: '#ff4d4f',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '5px 12px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
                                     title="Delete Dashboard"
                                 >
-                                    🗑️
+                                    Delete
                                 </button>
                             </button>
                         </li>

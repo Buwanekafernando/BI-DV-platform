@@ -33,7 +33,8 @@ function Dashboard({ datasetId, initialData }) {
             chart_type: "bar",
             x_axis: "",
             y_axis: "",
-            aggregation: "sum"
+            aggregation: "sum",
+            title: ""
         }]);
     };
 
@@ -78,6 +79,7 @@ function Dashboard({ datasetId, initialData }) {
             dataset_id: datasetId,
             filters: filters,
             charts: charts.map(c => ({
+                title: c.title,
                 chart_type: c.chart_type,
                 x_axis: c.x_axis,
                 y_axis: c.y_axis,
@@ -161,7 +163,10 @@ function Dashboard({ datasetId, initialData }) {
                         padding: "20px",
                         border: "1px solid var(--border-color)"
                     }}>
-                        <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
+                        <div
+                            data-html2canvas-ignore
+                            style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}
+                        >
                             <button
                                 onClick={() => setCharts(charts.filter(c => c.id !== chart.id))}
                                 style={{

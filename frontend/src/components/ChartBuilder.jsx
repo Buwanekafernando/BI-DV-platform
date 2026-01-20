@@ -9,21 +9,8 @@ import api from "../services/api";
 const COLORS = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"];
 
 function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFilters, onInteract }) {
-    const [columns, setColumns] = useState([]);
-    const [xAxis, setXAxis] = useState("");
-    const [yAxis, setYAxis] = useState("");
-    const [subGroup, setSubGroup] = useState("");
-    const [secondaryYAxis, setSecondaryYAxis] = useState("");
-    const [aggregation, setAggregation] = useState("sum");
-    const [chartType, setChartType] = useState("bar");
-    const [sortOrder, setSortOrder] = useState("desc");
-    const [isStacked, setIsStacked] = useState(false);
-    const [bins, setBins] = useState(10);
-    const [useConditionalFormatting, setUseConditionalFormatting] = useState(false);
-    const [chartData, setChartData] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [initialized, setInitialized] = useState(false);
+    const [title, setTitle] = useState("");
+    const [viewMode, setViewMode] = useState(false);
 
     useEffect(() => {
         if (!datasetId) return;
@@ -38,6 +25,7 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
     // Hydrate state from initialConfig
     useEffect(() => {
         if (initialConfig && !initialized) {
+            if (initialConfig.title) setTitle(initialConfig.title);
             if (initialConfig.x_axis) setXAxis(initialConfig.x_axis);
             if (initialConfig.y_axis) setYAxis(initialConfig.y_axis);
             if (initialConfig.sub_group) setSubGroup(initialConfig.sub_group);
@@ -46,6 +34,12 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
             if (initialConfig.chart_type) setChartType(initialConfig.chart_type);
             if (initialConfig.is_stacked !== undefined) setIsStacked(initialConfig.is_stacked);
             if (initialConfig.bins) setBins(initialConfig.bins);
+
+            // If we have a valid config and title, start in View Mode
+            if (initialConfig.title && initialConfig.x_axis && initialConfig.y_axis) {
+                setViewMode(true);
+            }
+
             setInitialized(true);
         }
     }, [initialConfig, initialized]);
@@ -61,6 +55,7 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
     useEffect(() => {
         if (onUpdate) {
             onUpdate({
+                title: title,
                 chart_type: chartType,
                 x_axis: xAxis,
                 y_axis: yAxis,
@@ -71,11 +66,12 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                 bins: bins
             });
         }
-    }, [chartType, xAxis, yAxis, subGroup, secondaryYAxis, aggregation, isStacked, bins]);
+    }, [title, chartType, xAxis, yAxis, subGroup, secondaryYAxis, aggregation, isStacked, bins]);
 
     const generateChart = async () => {
         if (!xAxis || !yAxis) {
-            setError("Please select both X and Y axes");
+            // Only show error if we are engaged in editing, not initial load
+            if (!viewMode) setError("Please select both X and Y axes");
             return;
         }
 
@@ -123,6 +119,22 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
         }
     };
 
+    const handleDone = () => {
+        if (!title.trim()) {
+            alert("Please enter a Chart Title before finishing.");
+            return;
+        }
+        if (!xAxis || !yAxis) {
+            alert("Please configure the X and Y axes.");
+            return;
+        }
+        if (chartData.length === 0) {
+            alert("Please generate the chart first.");
+            return;
+        }
+        setViewMode(true);
+    };
+
     // The backend returns keys like "value_sum"
     const handleChartClick = (data) => {
         if (onInteract && data && data.activePayload && data.activePayload[0]) {
@@ -141,115 +153,158 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
 
     return (
         <div className="chart-builder">
-            <h3 style={{ marginBottom: "20px", color: "var(--color-secondary)" }}>Chart Builder</h3>
-
-            <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "20px",
-                marginBottom: "20px",
-                background: "var(--color-background-surface)",
-                padding: "20px",
-                borderRadius: "var(--radius-md)"
-            }}>
-                <div className="form-group">
-                    <label className="form-label">Chart Type</label>
-                    <select value={chartType} onChange={e => setChartType(e.target.value)} className="form-select">
-                        <option value="bar">Bar Chart</option>
-                        <option value="line">Line Chart</option>
-                        <option value="area">Area Chart</option>
-                        <option value="pie">Pie Chart</option>
-                        <option value="table">Table</option>
-                        <option value="kpi">KPI Card</option>
-                        <option value="histogram">Histogram</option>
-                        <option value="funnel">Funnel Chart</option>
-                        <option value="dual_axis">Dual Axis (Bar+Line)</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label className="form-label">X-Axis (Group By)</label>
-                    <select value={xAxis} onChange={e => setXAxis(e.target.value)} className="form-select">
-                        <option value="">Select Column</option>
-                        {columns.map(col => (
-                            <option key={col.name} value={col.name}>{col.name}</option>
-                        ))}
-                    </select>
-                </div>
-                {["bar", "line", "area"].includes(chartType) && (
-                    <div className="form-group">
-                        <label className="form-label">Sub-Group (Legend)</label>
-                        <select value={subGroup} onChange={e => setSubGroup(e.target.value)} className="form-select">
-                            <option value="">None</option>
-                            {columns.map(col => (
-                                <option key={col.name} value={col.name}>{col.name}</option>
-                            ))}
-                        </select>
+            {/* Header / Title Area */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                {viewMode ? (
+                    <h3 style={{ margin: 0, color: "var(--color-primary)" }}>{title}</h3>
+                ) : (
+                    <div style={{ flex: 1, marginRight: "10px" }}>
+                        <label className="form-label" style={{ fontSize: "0.8rem" }}>Chart Title <span style={{ color: "red" }}>*</span></label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="e.g. Sales by Dept"
+                            style={{ width: "100%", padding: "8px" }}
+                        />
                     </div>
                 )}
-                <div className="form-group">
-                    <label className="form-label">Y-Axis (Value)</label>
-                    <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
-                        <option value="">Select Column</option>
-                        {columns.map(col => (
-                            <option key={col.name} value={col.name}>{col.name}</option>
-                        ))}
-                    </select>
-                </div>
-                {chartType === "dual_axis" && (
+
+                {/* Edit Button (hidden in export) */}
+                {viewMode && (
+                    <button
+                        data-html2canvas-ignore
+                        onClick={() => setViewMode(false)}
+                        className="btn btn-sm btn-outline"
+                        style={{ padding: "4px 8px", fontSize: "12px" }}
+                    >
+                        ✏️ Edit
+                    </button>
+                )}
+            </div>
+
+            {/* Configuration Controls - Hidden in View Mode */}
+            {!viewMode && (
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "20px",
+                    marginBottom: "20px",
+                    background: "var(--color-background-surface)",
+                    padding: "20px",
+                    borderRadius: "var(--radius-md)",
+                    border: "1px solid var(--border-color)"
+                }}>
                     <div className="form-group">
-                        <label className="form-label">Secondary Y-Axis</label>
-                        <select value={secondaryYAxis} onChange={e => setSecondaryYAxis(e.target.value)} className="form-select">
+                        <label className="form-label">Chart Type</label>
+                        <select value={chartType} onChange={e => setChartType(e.target.value)} className="form-select">
+                            <option value="bar">Bar Chart</option>
+                            <option value="line">Line Chart</option>
+                            <option value="area">Area Chart</option>
+                            <option value="pie">Pie Chart</option>
+                            <option value="table">Table</option>
+                            <option value="kpi">KPI Card</option>
+                            <option value="histogram">Histogram</option>
+                            <option value="funnel">Funnel Chart</option>
+                            <option value="dual_axis">Dual Axis (Bar+Line)</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">X-Axis (Group By)</label>
+                        <select value={xAxis} onChange={e => setXAxis(e.target.value)} className="form-select">
                             <option value="">Select Column</option>
                             {columns.map(col => (
                                 <option key={col.name} value={col.name}>{col.name}</option>
                             ))}
                         </select>
                     </div>
-                )}
-                <div className="form-group">
-                    <label className="form-label">Aggregation</label>
-                    <select value={aggregation} onChange={e => setAggregation(e.target.value)} className="form-select">
-                        <option value="sum">Sum</option>
-                        <option value="avg">Average</option>
-                        <option value="count">Count</option>
-                        <option value="min">Min</option>
-                        <option value="max">Max</option>
-                    </select>
-                </div>
-
-                {chartType === "histogram" && (
+                    {["bar", "line", "area"].includes(chartType) && (
+                        <div className="form-group">
+                            <label className="form-label">Sub-Group (Legend)</label>
+                            <select value={subGroup} onChange={e => setSubGroup(e.target.value)} className="form-select">
+                                <option value="">None</option>
+                                {columns.map(col => (
+                                    <option key={col.name} value={col.name}>{col.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <div className="form-group">
-                        <label className="form-label">Bins</label>
-                        <input type="number" value={bins} onChange={e => setBins(parseInt(e.target.value))} className="form-select" min="2" max="100" />
+                        <label className="form-label">Y-Axis (Value)</label>
+                        <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
+                            <option value="">Select Column</option>
+                            {columns.map(col => (
+                                <option key={col.name} value={col.name}>{col.name}</option>
+                            ))}
+                        </select>
                     </div>
-                )}
+                    {chartType === "dual_axis" && (
+                        <div className="form-group">
+                            <label className="form-label">Secondary Y-Axis</label>
+                            <select value={secondaryYAxis} onChange={e => setSecondaryYAxis(e.target.value)} className="form-select">
+                                <option value="">Select Column</option>
+                                {columns.map(col => (
+                                    <option key={col.name} value={col.name}>{col.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    <div className="form-group">
+                        <label className="form-label">Aggregation</label>
+                        <select value={aggregation} onChange={e => setAggregation(e.target.value)} className="form-select">
+                            <option value="sum">Sum</option>
+                            <option value="avg">Average</option>
+                            <option value="count">Count</option>
+                            <option value="min">Min</option>
+                            <option value="max">Max</option>
+                        </select>
+                    </div>
 
-                {chartType === "bar" && subGroup && (
+                    {chartType === "histogram" && (
+                        <div className="form-group">
+                            <label className="form-label">Bins</label>
+                            <input type="number" value={bins} onChange={e => setBins(parseInt(e.target.value))} className="form-select" min="2" max="100" />
+                        </div>
+                    )}
+
+                    {chartType === "bar" && subGroup && (
+                        <div className="form-group">
+                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input type="checkbox" checked={isStacked} onChange={e => setIsStacked(e.target.checked)} />
+                                Stacked Bar
+                            </label>
+                        </div>
+                    )}
+
                     <div className="form-group">
                         <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input type="checkbox" checked={isStacked} onChange={e => setIsStacked(e.target.checked)} />
-                            Stacked Bar
+                            <input type="checkbox" checked={useConditionalFormatting} onChange={e => setUseConditionalFormatting(e.target.checked)} />
+                            Conditional Colors
                         </label>
                     </div>
-                )}
 
-                <div className="form-group">
-                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input type="checkbox" checked={useConditionalFormatting} onChange={e => setUseConditionalFormatting(e.target.checked)} />
-                        Conditional Colors
-                    </label>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                        <button onClick={generateChart} disabled={loading} className="btn btn-outline" style={{ flex: 1 }}>
+                            {loading ? "Generating..." : "Refresh Preview"}
+                        </button>
+                        <button onClick={handleDone} className="btn btn-primary" style={{ flex: 1 }}>
+                            Done
+                        </button>
+                    </div>
                 </div>
-
-                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <button onClick={generateChart} disabled={loading} className="btn btn-primary" style={{ width: '100%' }}>
-                        {loading ? "Generating..." : "Generate View"}
-                    </button>
-                </div>
-            </div>
+            )}
 
             {error && <div className="message-box message-error">{error}</div>}
 
-            <div style={{ marginTop: "30px", minHeight: "400px", border: "1px dashed var(--border-color)", padding: "20px", borderRadius: "var(--radius-md)" }}>
+            <div style={{
+                marginTop: viewMode ? "10px" : "30px",
+                minHeight: "350px",
+                // Remove border/dashed style in view mode for cleaner export
+                border: viewMode ? "none" : "1px dashed var(--border-color)",
+                padding: viewMode ? "0" : "20px",
+                borderRadius: "var(--radius-md)"
+            }}>
                 {chartData.length > 0 && <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>Loaded {chartData.length} records</div>}
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={400}>

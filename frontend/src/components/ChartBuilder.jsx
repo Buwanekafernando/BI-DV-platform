@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-    BarChart, Bar, LineChart, Line,
-    XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend
+    BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+    XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend,
+    AreaChart, Area, ComposedChart, FunnelChart, Funnel, LabelList
 } from "recharts";
 
 import api from "../services/api";
@@ -10,9 +11,13 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
     const [columns, setColumns] = useState([]);
     const [xAxis, setXAxis] = useState("");
     const [yAxis, setYAxis] = useState("");
+    const [subGroup, setSubGroup] = useState("");
+    const [secondaryYAxis, setSecondaryYAxis] = useState("");
     const [aggregation, setAggregation] = useState("sum");
     const [chartType, setChartType] = useState("bar");
     const [sortOrder, setSortOrder] = useState("desc");
+    const [isStacked, setIsStacked] = useState(false);
+    const [bins, setBins] = useState(10);
     const [useConditionalFormatting, setUseConditionalFormatting] = useState(false);
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -34,8 +39,12 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
         if (initialConfig && !initialized) {
             if (initialConfig.x_axis) setXAxis(initialConfig.x_axis);
             if (initialConfig.y_axis) setYAxis(initialConfig.y_axis);
+            if (initialConfig.sub_group) setSubGroup(initialConfig.sub_group);
+            if (initialConfig.secondary_y_axis) setSecondaryYAxis(initialConfig.secondary_y_axis);
             if (initialConfig.aggregation) setAggregation(initialConfig.aggregation);
             if (initialConfig.chart_type) setChartType(initialConfig.chart_type);
+            if (initialConfig.is_stacked !== undefined) setIsStacked(initialConfig.is_stacked);
+            if (initialConfig.bins) setBins(initialConfig.bins);
             setInitialized(true);
         }
     }, [initialConfig, initialized]);
@@ -54,10 +63,14 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                 chart_type: chartType,
                 x_axis: xAxis,
                 y_axis: yAxis,
-                aggregation: aggregation
+                sub_group: subGroup,
+                secondary_y_axis: secondaryYAxis,
+                aggregation: aggregation,
+                is_stacked: isStacked,
+                bins: bins
             });
         }
-    }, [chartType, xAxis, yAxis, aggregation]);
+    }, [chartType, xAxis, yAxis, subGroup, secondaryYAxis, aggregation, isStacked, bins]);
 
     const generateChart = async () => {
         if (!xAxis || !yAxis) {
@@ -79,19 +92,24 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
 
         try {
             // Map UI state to backend QueryRequest
+            const groupBy = [xAxis];
+            if (subGroup) groupBy.push(subGroup);
+
+            const aggregations = [{ column: yAxis, function: aggregation }];
+            if (secondaryYAxis) aggregations.push({ column: secondaryYAxis, function: aggregation });
+
             const payload = {
-                group_by: [xAxis],
-                aggregations: [
-                    { column: yAxis, function: aggregation }
-                ],
-                // For string columns we can't sort by sum/avg, so default to count or the column itself
+                group_by: groupBy,
+                aggregations: aggregations,
                 sort_by: [
                     { column: `${yAxis}_${aggregation}`, order: sortOrder }
                 ],
                 filters: externalFilters ? Object.entries(externalFilters).map(([k, v]) => ({
                     column: k, operator: "eq", value: v
                 })) : [],
-                limit: 20
+                limit: 1000, // Increased limit for detailed charts
+                is_histogram: chartType === "histogram",
+                histogram_bins: bins
             };
 
             const response = await api.post(`/query/${datasetId}`, payload);
@@ -139,6 +157,13 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                     <select value={chartType} onChange={e => setChartType(e.target.value)} className="form-select">
                         <option value="bar">Bar Chart</option>
                         <option value="line">Line Chart</option>
+                        <option value="area">Area Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="table">Table</option>
+                        <option value="kpi">KPI Card</option>
+                        <option value="histogram">Histogram</option>
+                        <option value="funnel">Funnel Chart</option>
+                        <option value="dual_axis">Dual Axis (Bar+Line)</option>
                     </select>
                 </div>
                 <div className="form-group">
@@ -146,19 +171,41 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                     <select value={xAxis} onChange={e => setXAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
-                            <option key={col.name} value={col.name}>{col.name} ({col.dtype})</option>
+                            <option key={col.name} value={col.name}>{col.name}</option>
                         ))}
                     </select>
                 </div>
+                {["bar", "line", "area"].includes(chartType) && (
+                    <div className="form-group">
+                        <label className="form-label">Sub-Group (Legend)</label>
+                        <select value={subGroup} onChange={e => setSubGroup(e.target.value)} className="form-select">
+                            <option value="">None</option>
+                            {columns.map(col => (
+                                <option key={col.name} value={col.name}>{col.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <div className="form-group">
                     <label className="form-label">Y-Axis (Value)</label>
                     <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
                         <option value="">Select Column</option>
                         {columns.map(col => (
-                            <option key={col.name} value={col.name}>{col.name} ({col.dtype})</option>
+                            <option key={col.name} value={col.name}>{col.name}</option>
                         ))}
                     </select>
                 </div>
+                {chartType === "dual_axis" && (
+                    <div className="form-group">
+                        <label className="form-label">Secondary Y-Axis</label>
+                        <select value={secondaryYAxis} onChange={e => setSecondaryYAxis(e.target.value)} className="form-select">
+                            <option value="">Select Column</option>
+                            {columns.map(col => (
+                                <option key={col.name} value={col.name}>{col.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <div className="form-group">
                     <label className="form-label">Aggregation</label>
                     <select value={aggregation} onChange={e => setAggregation(e.target.value)} className="form-select">
@@ -169,13 +216,22 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                         <option value="max">Max</option>
                     </select>
                 </div>
-                <div className="form-group">
-                    <label className="form-label">Sort Order</label>
-                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className="form-select">
-                        <option value="desc">Descending</option>
-                        <option value="asc">Ascending</option>
-                    </select>
-                </div>
+
+                {chartType === "histogram" && (
+                    <div className="form-group">
+                        <label className="form-label">Bins</label>
+                        <input type="number" value={bins} onChange={e => setBins(parseInt(e.target.value))} className="form-select" min="2" max="100" />
+                    </div>
+                )}
+
+                {chartType === "bar" && subGroup && (
+                    <div className="form-group">
+                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <input type="checkbox" checked={isStacked} onChange={e => setIsStacked(e.target.checked)} />
+                            Stacked Bar
+                        </label>
+                    </div>
+                )}
 
                 <div className="form-group">
                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -185,13 +241,8 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                 </div>
 
                 <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <button
-                        onClick={generateChart}
-                        disabled={loading}
-                        className="btn btn-primary"
-                        style={{ width: '100%' }}
-                    >
-                        {loading ? "Generating..." : "Generate Chart"}
+                    <button onClick={generateChart} disabled={loading} className="btn btn-primary" style={{ width: '100%' }}>
+                        {loading ? "Generating..." : "Generate View"}
                     </button>
                 </div>
             </div>

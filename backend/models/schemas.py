@@ -109,6 +109,9 @@ class QueryRequest(BaseModel):
     aggregations: Optional[List[AggregationRequest]] = []
     sort_by: Optional[List[SortRequest]] = []
     limit: Optional[int] = 1000
+    # Add support for Histogram
+    is_histogram: Optional[bool] = False
+    histogram_bins: Optional[int] = 10
 
 class QueryResponse(BaseModel):
     data: List[Dict[str, Any]]
@@ -122,6 +125,12 @@ class ChartType(str, Enum):
     PIE = "pie"
     SCATTER = "scatter"
     HEATMAP = "heatmap"
+    TABLE = "table"
+    KPI = "kpi"
+    HISTOGRAM = "histogram"
+    AREA = "area"
+    DUAL_AXIS = "dual_axis"
+    FUNNEL = "funnel"
 
 class ChartRequest(BaseModel):
     x_column: Optional[str] = None
@@ -164,10 +173,15 @@ class ReportResponse(BaseModel):
 
 
 class ChartConfig(BaseModel):
+    id: Optional[int] = None
     chart_type: str
     x_axis: str
     y_axis: str
     aggregation: str
+    sub_group: Optional[str] = None
+    secondary_y_axis: Optional[str] = None
+    is_stacked: Optional[bool] = False
+    bins: Optional[int] = 10  # For Histogram
 
 class DashboardCreate(BaseModel):
     name: str

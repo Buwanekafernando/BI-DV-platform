@@ -31,6 +31,22 @@ class QueryEngine:
         # Apply filters
         if query.filters:
             df = apply_filters(df, query.filters)
+
+        # Apply histogram binning if requested
+        if query.is_histogram and query.aggregations:
+            col = query.aggregations[0].column
+            if col in df.columns:
+                bins = query.histogram_bins or 10
+                # Use value_counts with bins for easier histogram calculation
+                counts = df[col].value_counts(bins=bins, sort=False).reset_index()
+                counts.columns = [col, f"{col}_count"]
+                # Convert Interval to string for JSON serialization
+                counts[col] = counts[col].astype(str)
+                return {
+                    "data": counts.to_dict(orient="records"),
+                    "total_rows": len(counts),
+                    "columns": counts.columns.tolist()
+                }
         
         # Apply grouping and aggregations
         if query.group_by and query.aggregations:

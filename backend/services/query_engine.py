@@ -91,50 +91,62 @@ class QueryEngine:
         """Apply aggregations with grouping"""
         validate_columns(df, group_by)
         
-        # Build aggregation dictionary
-        agg_dict = {}
+        # Build aggregation mapping: {column: [function1, function2]}
+        # Using a list of functions supports multiple aggregations on the same column
+        func_map = {}
+        # Mapping for pandas aggregation functions
+        func_translation = {
+            "sum": "sum",
+            "avg": "mean",
+            "count": "count",
+            "min": "min",
+            "max": "max",
+            "median": "median",
+            "std": "std"
+        }
+        
         for agg in aggregations:
             column = agg.column
             function = agg.function.value
             
             if column not in df.columns:
                 continue
-            
-            if function == "sum":
-                agg_dict[column] = "sum"
-            elif function == "avg":
-                agg_dict[column] = "mean"
-            elif function == "count":
-                agg_dict[column] = "count"
-            elif function == "min":
-                agg_dict[column] = "min"
-            elif function == "max":
-                agg_dict[column] = "max"
-            elif function == "median":
-                agg_dict[column] = "median"
-            elif function == "std":
-                agg_dict[column] = "std"
+                
+            p_func = func_translation.get(function, "sum")
+            if column not in func_map:
+                func_map[column] = []
+            if p_func not in func_map[column]:
+                func_map[column].append(p_func)
         
         # Group and aggregate
-        grouped = df.groupby(group_by).agg(agg_dict).reset_index()
+        # Result has a MultiIndex for columns if we used lists in func_map
+        grouped = df.groupby(group_by).agg(func_map)
         
-        # Rename columns to include aggregation function
-        for agg in aggregations:
-            column = agg.column
-            function = agg.function.value
-            if column in grouped.columns and column not in group_by:
-                grouped.rename(columns={column: f"{column}_{function}"}, inplace=True)
+        # Flatten the MultiIndex columns and rename to f"{column}_{function}"
+        new_columns = []
+        # Reverse mapping: mean -> avg
+        reverse_translation = {v: k for k, v in func_translation.items()}
+        
+        for col_name, func_name in grouped.columns:
+            display_func = reverse_translation.get(func_name, func_name)
+            new_columns.append(f"{col_name}_{display_func}")
+            
+        grouped.columns = new_columns
+        
+        # Reset index to pull group_by columns into the dataframe
+        # Now name clashes like 'Job Title' vs 'Job Title_count' are avoided
+        df_result = grouped.reset_index()
         
         # If we have 2 group_by columns, pivot them for charts (Stacked/Grouped)
         if len(group_by) == 2 and len(aggregations) == 1:
-            val_col = f"{aggregations[0].column}_{aggregations[0].function.value}"
+            val_col = new_columns[0] # The only aggregation result
             # Pivot: rows=group_by[0], columns=group_by[1], values=agg_result
-            pivot_df = grouped.pivot(index=group_by[0], columns=group_by[1], values=val_col).reset_index()
+            pivot_df = df_result.pivot(index=group_by[0], columns=group_by[1], values=val_col).reset_index()
             # Fill NaN with 0 for charts
             pivot_df = pivot_df.fillna(0)
             return pivot_df
 
-        return grouped
+        return df_result
     
     @staticmethod
     def _apply_global_aggregations(

@@ -49,7 +49,8 @@ def decode_access_token(token: str) -> TokenData:
         if email is None:
             raise credentials_exception
         return TokenData(email=email)
-    except JWTError:
+    except JWTError as e:
+        print(f"DEBUG AUTH: JWT Error: {str(e)}")
         raise credentials_exception
 
 async def get_current_user(
@@ -60,6 +61,7 @@ async def get_current_user(
     token_data = decode_access_token(token)
     user = db.query(User).filter(User.email == token_data.email).first()
     if not user:
+        print(f"DEBUG AUTH: User {token_data.email} not found in DB")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",

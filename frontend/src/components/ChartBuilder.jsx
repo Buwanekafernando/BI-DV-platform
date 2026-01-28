@@ -26,6 +26,7 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [initialized, setInitialized] = useState(false);
+    const [measures, setMeasures] = useState([]);
 
     useEffect(() => {
         if (!datasetId) return;
@@ -35,6 +36,14 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                 setColumns(res.data.columns);
             })
             .catch(err => console.error("Failed to load columns", err));
+
+        api.get(`/datasets/${datasetId}`)
+            .then(res => {
+                if (res.data.measures) {
+                    setMeasures(JSON.parse(res.data.measures));
+                }
+            })
+            .catch(err => console.error("Failed to load measures", err));
     }, [datasetId]);
 
     // Hydrate state from initialConfig
@@ -92,7 +101,8 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
 
         // Validation: Check if aggregation is valid for the selected Y column
         const yCol = columns.find(c => c.name === yAxis);
-        const isNumeric = yCol && (yCol.dtype === 'int64' || yCol.dtype === 'float64');
+        const yMeasure = measures.find(m => m.name === yAxis);
+        const isNumeric = yMeasure || (yCol && (yCol.dtype === 'int64' || yCol.dtype === 'float64'));
 
         if (!isNumeric && aggregation !== 'count') {
             setError(`Cannot apply '${aggregation}' on non-numeric column '${yAxis}'. Please use 'Count'.`);
@@ -114,7 +124,7 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                 group_by: groupBy,
                 aggregations: aggregations,
                 sort_by: [
-                    { column: `${yAxis}_${aggregation}`, order: sortOrder }
+                    { column: yMeasure ? yAxis : `${yAxis}_${aggregation}`, order: sortOrder }
                 ],
                 filters: externalFilters ? Object.entries(externalFilters).map(([k, v]) => ({
                     column: k, operator: "eq", value: v
@@ -163,7 +173,8 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
         return value >= avg ? "#4caf50" : "#ff5252"; // Green for above avg, Red for below
     };
 
-    const dataKeyY = `${yAxis}_${aggregation}`;
+    const isYMeasure = measures.some(m => m.name === yAxis);
+    const dataKeyY = isYMeasure ? yAxis : `${yAxis}_${aggregation}`;
     const avgValue = chartData.reduce((acc, curr) => acc + (curr[dataKeyY] || 0), 0) / (chartData.length || 1);
 
     return (
@@ -249,9 +260,18 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                         <label className="form-label">Y-Axis (Value)</label>
                         <select value={yAxis} onChange={e => setYAxis(e.target.value)} className="form-select">
                             <option value="">Select Column</option>
-                            {columns.map(col => (
-                                <option key={col.name} value={col.name}>{col.name}</option>
-                            ))}
+                            <optgroup label="Raw Columns">
+                                {columns.map(col => (
+                                    <option key={col.name} value={col.name}>{col.name}</option>
+                                ))}
+                            </optgroup>
+                            {measures.length > 0 && (
+                                <optgroup label="Calculated Measures">
+                                    {measures.map(m => (
+                                        <option key={m.name} value={m.name}>{m.name}</option>
+                                    ))}
+                                </optgroup>
+                            )}
                         </select>
                     </div>
                     {chartType === "dual_axis" && (
@@ -267,13 +287,19 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                     )}
                     <div className="form-group">
                         <label className="form-label">Aggregation</label>
-                        <select value={aggregation} onChange={e => setAggregation(e.target.value)} className="form-select">
+                        <select
+                            value={aggregation}
+                            onChange={e => setAggregation(e.target.value)}
+                            className="form-select"
+                            disabled={measures.some(m => m.name === yAxis)}
+                        >
                             <option value="sum">Sum</option>
                             <option value="avg">Average</option>
                             <option value="count">Count</option>
                             <option value="min">Min</option>
                             <option value="max">Max</option>
                         </select>
+                        {measures.some(m => m.name === yAxis) && <div style={{ fontSize: '0.7rem', color: 'var(--color-primary)', marginTop: '4px' }}>Measure defines its own logic</div>}
                     </div>
 
                     {chartType === "histogram" && (
@@ -354,7 +380,7 @@ function ChartBuilder({ datasetId, onUpdate, initialConfig, filters: externalFil
                                 return (
                                     <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                                         <h1 style={{ fontSize: "4rem", color: COLORS[0], margin: 0 }}>{typeof kpiValue === 'number' ? kpiValue.toLocaleString() : kpiValue}</h1>
-                                        <p style={{ fontSize: "1.2rem", color: "var(--color-text-muted)" }}>{aggregation.toUpperCase()} of {yAxis}</p>
+                                        <p style={{ fontSize: "1.2rem", color: "var(--color-text-muted)" }}>{isYMeasure ? 'CALCULATED MEASURE' : aggregation.toUpperCase()} of {yAxis}</p>
                                     </div>
                                 );
                             }

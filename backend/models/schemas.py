@@ -201,6 +201,7 @@ class DatasetTransformUpdate(BaseModel):
 class MeasureDefinition(BaseModel):
     name: str
     formula: str  # e.g., "SUM(Sales) / SUM(Quantity)" or simple field ref
+    category: Optional[str] = "General"
     description: Optional[str] = None
 
 class DatasetMeasuresUpdate(BaseModel):

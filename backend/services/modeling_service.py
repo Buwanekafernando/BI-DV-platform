@@ -4,18 +4,23 @@ from typing import List, Dict, Any
 class ModelingService:
     @staticmethod
     def apply_measures(df: pd.DataFrame, measures: List[Dict[str, Any]]) -> pd.DataFrame:
-        """Add calculated measures to the DataFrame"""
+        """Add row-level calculated measures to the DataFrame"""
         for measure in measures:
             name = measure.get("name")
             formula = measure.get("formula")
             
+            # Simple check if it's an aggregate measure (has SUM, AVG, COUNT, etc.)
+            # Aggregate measures are evaluated AFTER grouping in the QueryEngine
+            is_aggregate = any(agg in formula.upper() for agg in ["SUM(", "AVG(", "COUNT(", "MIN(", "MAX("])
+            
+            if is_aggregate:
+                continue
+
             try:
-                # Support simple aggregations if passed as a formula string like "SUM(col)"
-                # But for now, we mostly support row-level / simple cross-column arithmetic
-                # In a more advanced version, we'd handle aggregations differently
+                # Row-level cross-column arithmetic
                 df[name] = df.eval(formula)
             except Exception as e:
-                print(f"Error calculating measure {name}: {e}")
+                print(f"Error calculating row-level measure {name}: {e}")
                 
         return df
 

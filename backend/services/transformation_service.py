@@ -60,8 +60,17 @@ class TransformationService:
                     # WARNING: eval can be dangerous, but for this POC we use a restricted environment
                     # in a real app, we'd use a proper parser
                     try:
-                        # Only allow arithmetic and column names
-                        df[name] = df.eval(formula)
+                        # Proactively backtick known columns in the expression for robust evaluation
+                        safe_expr = formula
+                        sorted_cols = sorted(df.columns.tolist(), key=len, reverse=True)
+                        for col in sorted_cols:
+                            if col in safe_expr and not f"`{col}`" in safe_expr:
+                                # If name has spaces or special chars, backtick it
+                                if any(c in col for c in " %-+*/()"):
+                                     safe_expr = safe_expr.replace(col, f"`{col}`")
+                        
+                        # df.eval for arithmetic transformations
+                        df[name] = df.eval(safe_expr)
                     except Exception as e:
                         print(f"Error in derived column {name}: {e}")
                         

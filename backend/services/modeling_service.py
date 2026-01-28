@@ -17,8 +17,17 @@ class ModelingService:
                 continue
 
             try:
-                # Row-level cross-column arithmetic
-                df[name] = df.eval(formula)
+                # Proactively backtick known columns in the expression for robust evaluation
+                safe_expr = formula
+                sorted_cols = sorted(df.columns.tolist(), key=len, reverse=True)
+                for col in sorted_cols:
+                    if col in safe_expr and not f"`{col}`" in safe_expr:
+                        # If name has spaces or special chars, backtick it
+                        if any(c in col for c in " %-+*/()"):
+                             safe_expr = safe_expr.replace(col, f"`{col}`")
+                
+                # df.eval for row-level cross-column arithmetic
+                df[name] = df.eval(safe_expr)
             except Exception as e:
                 print(f"Error calculating row-level measure {name}: {e}")
                 

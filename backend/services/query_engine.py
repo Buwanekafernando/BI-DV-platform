@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import List, Dict, Any, Set
 import re
-from models.schemas import QueryRequest, AggregationType, FilterCondition
+from models.schemas import QueryRequest, AggregationType, FilterCondition, AggregationRequest
 from utils.validators import apply_filters, validate_columns
 from services.transformation_service import TransformationService
 from services.modeling_service import ModelingService
@@ -50,15 +50,35 @@ class QueryEngine:
         active_agg_measures = [m for m in agg_measures if m["name"] in requested_measure_names]
         
         # 2. Extract dependencies for active aggregate measures
-        # e.g. "SUM(Sales) / SUM(Qty)" -> [("Sales", "sum"), ("Qty", "sum")]
+        # e.g. "SUM(Sales) / SUM(Qty)" or "SUM(Unit Price * Qty)"
         internal_aggs = []
         if active_agg_measures:
              for m in active_agg_measures:
-                 deps = re.findall(r'(\w+)\((\w+)\)', m["formula"])
-                 for func, col in deps:
+                 # Improved regex to handle spaces and operators inside ()
+                 deps = re.findall(r'(\w+)\(([^)]+)\)', m["formula"])
+                 for func, col_expr in deps:
                      func_lower = func.lower()
                      if func_lower == "mean": func_lower = "avg"
-                     internal_aggs.append(AggregationRequest(column=col, function=AggregationType(func_lower)))
+                     
+                     # If col_expr is an expression (e.g. "A * B"), eval it row-level first
+                     target_col = col_expr
+                     if col_expr not in df.columns:
+                         try:
+                             # Proactively backtick known columns in the expression
+                             safe_expr = col_expr
+                             # Sort columns by length descending to avoid partial replacement (e.g. "Total" vs "Total Sales")
+                             sorted_cols = sorted(df.columns.tolist(), key=len, reverse=True)
+                             for col in sorted_cols:
+                                 if col in safe_expr and not f"`{col}`" in safe_expr:
+                                     # Simple replacement with backticks for col names with spaces or special chars
+                                     if any(c in col for c in " %-+*/()"):
+                                         safe_expr = safe_expr.replace(col, f"`{col}`")
+                             
+                             df[col_expr] = df.eval(safe_expr)
+                         except Exception as e:
+                             print(f"Warning: could not pre-evaluate row-level expression '{col_expr}': {e}")
+                     
+                     internal_aggs.append(AggregationRequest(column=col_expr, function=AggregationType(func_lower)))
 
         # 3. Build the full list of aggregations (User requested + internal dependencies)
         # Filter out the measures themselves from the first pass of aggregation
@@ -238,17 +258,25 @@ class QueryEngine:
             name = m["name"]
             formula = m["formula"]
             
-            # Map "SUM(Profit)" to "Profit_sum" in the formula
-            # Regex to find occurrences and replace
+            # Map "SUM(Profit)" to "`Profit_sum`" in the formula
+            # Using backticks for columns that have spaces or special characters
             def replacer(match):
-                func, col = match.groups()
+                func, col_expr = match.groups()
                 func_lower = func.lower()
                 if func_lower == "mean": func_lower = "avg"
-                return f"{col}_{func_lower}"
+                
+                target = f"{col_expr}_{func_lower}"
+                # If name has spaces or special chars, backtick it for df.eval
+                if any(c in target for c in " %-+*/()"):
+                    return f"`{target}`"
+                return target
             
-            clean_formula = re.sub(r'(\w+)\((\w+)\)', replacer, formula)
+            # Improved regex for multi-word or expressions
+            clean_formula = re.sub(r'(\w+)\(([^)]+)\)', replacer, formula)
             
             try:
+                # Handle raw columns in formula that aren't inside aggregations (unlikely but possible)
+                # We prioritize the mapped aggregate results
                 df[name] = df.eval(clean_formula)
             except Exception as e:
                 print(f"Error evaluating aggregate measure {name}: {e}")
@@ -278,17 +306,31 @@ class QueryEngine:
             agg_measures = [m for m in measures if any(agg in m.get("formula", "").upper() for agg in ["SUM(", "AVG(", "COUNT(", "MIN(", "MAX("])]
             if agg_measures:
                 for m in agg_measures:
-                    deps = re.findall(r'(\w+)\((\w+)\)', m["formula"])
-                    for func, col in deps:
-                        if col in df_preview.columns:
+                    # Improved regex
+                    deps = re.findall(r'(\w+)\(([^)]+)\)', m["formula"])
+                    for func, col_expr in deps:
+                        # Pre-evaluate row-level part if expression
+                        if col_expr not in df_preview.columns:
+                            try:
+                                safe_expr = col_expr
+                                sorted_cols = sorted(df_preview.columns.tolist(), key=len, reverse=True)
+                                for col in sorted_cols:
+                                    if col in safe_expr and not f"`{col}`" in safe_expr:
+                                        if any(c in col for c in " %-+*/()"):
+                                            safe_expr = safe_expr.replace(col, f"`{col}`")
+                                df_preview[col_expr] = df_preview.eval(safe_expr)
+                            except:
+                                pass
+
+                        if col_expr in df_preview.columns:
                             func_lower = func.lower()
                             if func_lower == "mean": func_lower = "avg"
-                            target_col = f"{col}_{func_lower}"
-                            if func_lower == "sum": df_preview[target_col] = df_preview[col].sum()
-                            elif func_lower == "avg": df_preview[target_col] = df_preview[col].mean()
-                            elif func_lower == "count": df_preview[target_col] = df_preview[col].count()
-                            elif func_lower == "min": df_preview[target_col] = df_preview[col].min()
-                            elif func_lower == "max": df_preview[target_col] = df_preview[col].max()
+                            target_col = f"{col_expr}_{func_lower}"
+                            if func_lower == "sum": df_preview[target_col] = df_preview[col_expr].sum()
+                            elif func_lower == "avg": df_preview[target_col] = df_preview[col_expr].mean()
+                            elif func_lower == "count": df_preview[target_col] = df_preview[col_expr].count()
+                            elif func_lower == "min": df_preview[target_col] = df_preview[col_expr].min()
+                            elif func_lower == "max": df_preview[target_col] = df_preview[col_expr].max()
                 
                 df_preview = QueryEngine._evaluate_aggregate_measures(df_preview, agg_measures)
         

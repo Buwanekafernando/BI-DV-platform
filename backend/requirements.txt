@@ -16,3 +16,4 @@ seaborn
 pydantic
 pydantic-settings
 email-validator
+pyodbc

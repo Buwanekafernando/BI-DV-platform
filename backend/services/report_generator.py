@@ -38,7 +38,7 @@ class ReportGenerator:
         df.to_csv(output_path, index=False)
         
         return output_path
-    
+    #REMOVE THE PDF REPORT GENERATION
     @staticmethod
     def generate_pdf_report(
         file_path: str,

@@ -37,17 +37,31 @@ class DatasetManager:
     
     @staticmethod
     def delete_dataset(db: Session, dataset_id: str, user: User) -> bool:
-        """Delete a dataset and its file"""
+        """Delete a dataset and its file, including associated dashboards and reports"""
         dataset = DatasetManager.verify_dataset_access(db, dataset_id, user)
         
-        # Delete file
-        file_path = dataset.file_path
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        # Collect report file paths before deleting database records
+        report_files = []
+        for dashboard in dataset.dashboards:
+            for report in dashboard.reports:
+                if report.file_path and os.path.exists(report.file_path):
+                    report_files.append(report.file_path)
         
-        # Delete database record
+        # Delete file associated with dataset
+        dataset_file_path = dataset.file_path
+        if os.path.exists(dataset_file_path):
+            os.remove(dataset_file_path)
+        
+        # Delete database record (cascades will handle dashboards, shares, and reports)
         db.delete(dataset)
         db.commit()
+        
+        # Clean up report files after successful DB commit
+        for file_path in report_files:
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print(f"Error deleting report file {file_path}: {e}")
         
         return True
     

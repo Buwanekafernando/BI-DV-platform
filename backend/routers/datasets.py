@@ -100,9 +100,16 @@ async def profile_dataset(
     dataset = DatasetManager.verify_dataset_access(db, dataset_id, current_user)
     
     try:
+        if not os.path.exists(dataset.file_path):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Dataset file not found on disk"
+            )
         profile = DataProfiler.profile_dataset(dataset.file_path)
         profile["dataset_id"] = dataset_id
         return profile
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

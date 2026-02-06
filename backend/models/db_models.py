@@ -29,7 +29,7 @@ class Dataset(Base):
     uploaded_at = Column(DateTime, server_default=func.now())
 
     owner = relationship("User", back_populates="datasets")
-    dashboards = relationship("Dashboard", back_populates="dataset")
+    dashboards = relationship("Dashboard", back_populates="dataset", cascade="all, delete-orphan")
 
 class Dashboard(Base):
     __tablename__ = "dashboards"
@@ -45,7 +45,8 @@ class Dashboard(Base):
 
     user = relationship("User", back_populates="dashboards")
     dataset = relationship("Dataset", back_populates="dashboards")
-    shares = relationship("DashboardShare", back_populates="dashboard")
+    shares = relationship("DashboardShare", back_populates="dashboard", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="dashboard", cascade="all, delete-orphan")
 
 class Report(Base):
     __tablename__ = "reports"
@@ -55,6 +56,8 @@ class Report(Base):
     report_type = Column(String, nullable=False)  # pdf, png, etc.
     file_path = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+
+    dashboard = relationship("Dashboard", back_populates="reports")
 
 class DashboardShare(Base):
     __tablename__ = "dashboard_shares"

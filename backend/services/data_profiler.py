@@ -9,7 +9,8 @@ class DataProfiler:
     @staticmethod
     def profile_dataset(file_path: str) -> Dict[str, Any]:
         """Generate comprehensive profile of a dataset"""
-        df = pd.read_csv(file_path)
+        # Read the file once with low_memory=False for better type inference
+        df = pd.read_csv(file_path, low_memory=False)
         
         profile = {
             "total_rows": len(df),
@@ -25,7 +26,7 @@ class DataProfiler:
             profile["columns"].append(col_profile)
             
             # Categorize columns
-            if col_profile["dtype"] in ["int64", "float64"]:
+            if col_profile["dtype"] in ["int64", "float64", "float32", "int32"]:
                 profile["numeric_columns"].append(column)
             elif col_profile.get("is_date", False):
                 profile["date_columns"].append(column)
@@ -81,7 +82,10 @@ class DataProfiler:
             try:
                 # Try to parse a sample of non-null values
                 sample = col_data.dropna().head(10)
-                pd.to_datetime(sample, errors='raise')
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=UserWarning, message=".*Could not infer format.*")
+                    pd.to_datetime(sample, errors='raise')
                 return True
             except:
                 return False

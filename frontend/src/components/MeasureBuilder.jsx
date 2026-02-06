@@ -8,6 +8,7 @@ function MeasureBuilder({ datasetId }) {
     const [category, setCategory] = useState("General");
     const [previewData, setPreviewData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [infoLoading, setInfoLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [columns, setColumns] = useState([]);
@@ -18,15 +19,20 @@ function MeasureBuilder({ datasetId }) {
     }, [datasetId]);
 
     const loadData = async () => {
+        setInfoLoading(true);
+        setError("");
         try {
             const dsRes = await api.get(`/datasets/${datasetId}`);
             if (dsRes.data.measures) {
                 setMeasures(JSON.parse(dsRes.data.measures));
             }
             const profRes = await api.get(`/datasets/${datasetId}/profile`);
-            setColumns(profRes.data.columns);
+            setColumns(profRes.data.columns || []);
         } catch (err) {
             console.error("Failed to load info", err);
+            setError("Failed to load dataset details. The file might be missing or corrupted.");
+        } finally {
+            setInfoLoading(false);
         }
     };
 
@@ -131,9 +137,15 @@ function MeasureBuilder({ datasetId }) {
                         <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
                             <p style={{ fontWeight: 600, fontSize: '0.8rem', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>AVAILABLE RAW COLUMNS</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                {columns.map(c => (
-                                    <span key={c.name} className="badge" style={{ cursor: 'pointer' }} onClick={() => setFormula(f => f + c.name)}>{c.name}</span>
-                                ))}
+                                {infoLoading ? (
+                                    <span style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>Loading columns...</span>
+                                ) : columns.length > 0 ? (
+                                    columns.map(c => (
+                                        <span key={c.name} className="badge" style={{ cursor: 'pointer' }} onClick={() => setFormula(f => f + c.name)}>{c.name}</span>
+                                    ))
+                                ) : (
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>No columns available.</span>
+                                )}
                             </div>
                         </div>
                     </div>

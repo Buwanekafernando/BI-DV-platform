@@ -39,7 +39,7 @@ function TransformPanel({ onAddStep, columns }) {
                             <input
                                 type="text"
                                 className="form-input"
-                                onChange={e => setParams({ columns: { [params.target]: e.target.value } })}
+                                onChange={e => setParams(prev => ({ ...prev, columns: { [prev.target]: e.target.value } }))}
                             />
                         </div>
                     </>

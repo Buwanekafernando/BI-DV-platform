@@ -42,11 +42,11 @@ function MainApp() {
       <header className="app-header" style={{ justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <img src={boclogo} alt="BOC Logo" className="header-logo" />
-          <h1 className="header-title">BOC BI Platform</h1>
+          <h1 className="header-title">BOC BI Analytics</h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Welcome, {user.username || user.email}</span>
-          <button onClick={logout} className="btn" style={{ padding: '5px 10px', fontSize: '0.9rem', border: '1px solid var(--border-color)' }}>Logout</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg)' }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Welcome, <strong>{user.username || user.email}</strong></span>
+          <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Logout</button>
         </div>
       </header>
 
@@ -62,7 +62,7 @@ function MainApp() {
                 icon="🏠"
                 label="Home"
               />
-              <div style={{ margin: '10px 0', borderBottom: '1px solid var(--border-color)' }}></div>
+              <div style={{ margin: 'var(--spacing-md) 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}></div>
               <NavButton
                 active={currentView === "dashboard"}
                 onClick={() => setCurrentView("dashboard")}
@@ -76,7 +76,7 @@ function MainApp() {
                 label="Data View"
               />
 
-              <div style={{ margin: '10px 0', borderBottom: '1px solid var(--border-color)' }}></div>
+              <div style={{ margin: 'var(--spacing-md) 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}></div>
               <NavButton
                 active={currentView === "prep"}
                 onClick={() => setCurrentView("prep")}
@@ -98,27 +98,26 @@ function MainApp() {
           <div className="page-container">
             {!datasetId ? (
               <div className="welcome-section">
-                <div className="card" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', padding: '4rem 2rem' }}>
-                  <h2 style={{ fontSize: '2.5rem', color: 'var(--color-secondary)', marginBottom: '1rem' }}>Welcome to BOC BI</h2>
-                  <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '3rem' }}>
-                    Unlock insights from your data with our advanced analytics platform.
+                <div className="card" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center', padding: '4rem var(--spacing-lg)' }}>
+                  <h1 style={{ fontSize: '2.5rem', color: 'var(--color-secondary-maroon)', marginBottom: 'var(--spacing-md)' }}>Enterprise Analytics Platform</h1>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '1.15rem', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem' }}>
+                    Unlock insights from your financial data with our secure, high-performance business intelligence system.
                   </p>
 
-                  <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
+                  <div style={{ textAlign: 'left', marginBottom: 'var(--spacing-xl)' }}>
                     <DatasetUpload onUploadSuccess={handleUploadSuccess} />
                   </div>
 
-                  <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                  <div style={{ textAlign: 'left', borderTop: '1px solid var(--color-border-light)', paddingTop: 'var(--spacing-xl)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--spacing-xl)' }}>
                       <div>
-                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ marginBottom: 'var(--spacing-lg)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                           <span>📄</span> Your Datasets
                         </h3>
                         <DatasetList onSelect={handleUploadSuccess} />
                       </div>
                       <div>
-                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ marginBottom: 'var(--spacing-lg)', display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                           <span>📂</span> Your Dashboards
                         </h3>
                         <DashboardList onSelect={handleDashboardSelect} datasetId={datasetId} />

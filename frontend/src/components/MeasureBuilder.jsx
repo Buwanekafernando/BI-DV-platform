@@ -90,10 +90,10 @@ function MeasureBuilder({ datasetId }) {
     };
 
     return (
-        <div className="measure-builder" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ margin: 0 }}>Measure & Modeling Builder</h2>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="page-container">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+                <h1 className="header-title" style={{ textTransform: 'none', color: 'var(--color-secondary-maroon)' }}>Measure & Modeling Builder</h1>
+                <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
                     <button onClick={() => fetchPreview(measures)} disabled={loading} className="btn btn-secondary">
                         {loading ? "Evaluating..." : "Run Preview"}
                     </button>
@@ -103,11 +103,11 @@ function MeasureBuilder({ datasetId }) {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--spacing-lg)' }}>
                 <div className="left-panel">
-                    <div className="builder-panel card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
-                        <h4 style={{ marginBottom: "1rem" }}>Define New Measure</h4>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: '1.5rem' }}>
+                    <div className="card">
+                        <h3>Define New Measure</h3>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-md)", marginBottom: 'var(--spacing-md)' }}>
                             <div className="form-group">
                                 <label className="form-label">Measure Name</label>
                                 <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Total_Profit" />
@@ -122,7 +122,7 @@ function MeasureBuilder({ datasetId }) {
                                 </select>
                             </div>
                         </div>
-                        <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                        <div className="form-group">
                             <label className="form-label">Formula (e.g. Sales * 0.1  OR  SUM(Profit) / SUM(Sales))</label>
                             <textarea
                                 className="form-input"
@@ -132,11 +132,11 @@ function MeasureBuilder({ datasetId }) {
                                 placeholder="Use column names directly. Supports SUM(), AVG(), COUNT(), MIN(), MAX()"
                             />
                         </div>
-                        <button className="btn btn-primary" style={{ width: '100%' }} onClick={addMeasure}>Add Measure to Definition</button>
+                        <button className="btn btn-primary" style={{ width: '100%', marginTop: 'var(--spacing-md)' }} onClick={addMeasure}>Add Measure to Definition</button>
 
-                        <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-                            <p style={{ fontWeight: 600, fontSize: '0.8rem', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>AVAILABLE RAW COLUMNS</p>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ marginTop: 'var(--spacing-lg)', padding: 'var(--spacing-md)', background: '#F3F4F6', borderRadius: 'var(--radius-md)' }}>
+                            <p className="form-label" style={{ fontSize: '0.75rem', marginBottom: 'var(--spacing-sm)' }}>AVAILABLE RAW COLUMNS</p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-xs)' }}>
                                 {infoLoading ? (
                                     <span style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>Loading columns...</span>
                                 ) : columns.length > 0 ? (
@@ -150,38 +150,40 @@ function MeasureBuilder({ datasetId }) {
                         </div>
                     </div>
 
-                    {error && <div className="message-box message-error" style={{ marginBottom: '1rem' }}>{error}</div>}
-                    {success && <div className="message-box message-success" style={{ marginBottom: '1rem' }}>{success}</div>}
+                    {error && <div className="message-box message-error">{error}</div>}
+                    {success && <div className="message-box message-success">{success}</div>}
                 </div>
 
                 <div className="right-panel">
-                    <div className="measures-list card" style={{ padding: "1.5rem", height: '100%' }}>
-                        <h4 style={{ marginBottom: "1rem" }}>Defined Measures ({measures.length})</h4>
+                    <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <h3>Defined Measures ({measures.length})</h3>
                         {measures.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
+                            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <p>No measures defined yet.</p>
-                                <p style={{ fontSize: '0.8rem' }}>Start by defining a name and formula on the left.</p>
+                                <p style={{ fontSize: '0.85rem' }}>Start by defining a name and formula on the left.</p>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', overflowY: 'auto', flex: 1 }}>
                                 {measures.map((m, index) => (
-                                    <div key={index} className="measure-item" style={{
+                                    <div key={index} style={{
                                         display: "flex",
                                         justifyContent: "space-between",
                                         alignItems: "flex-start",
-                                        padding: "1rem",
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: "1px solid var(--border-color)",
-                                        borderRadius: '8px'
+                                        padding: "var(--spacing-md)",
+                                        background: 'var(--color-background-soft)',
+                                        border: "1px solid var(--color-border-light)",
+                                        borderRadius: 'var(--radius-md)'
                                     }}>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-                                                <span className="badge badge-primary" style={{ fontSize: '0.6rem' }}>{m.category}</span>
-                                                <strong style={{ fontSize: '1.1rem' }}>{m.name}</strong>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-xs)' }}>
+                                                <span className="badge badge-primary">{m.category}</span>
+                                                <strong style={{ fontSize: '1rem', color: 'var(--color-secondary-maroon)' }}>{m.name}</strong>
                                             </div>
-                                            <code style={{ color: 'var(--color-primary)', display: 'block', fontSize: '0.9rem' }}>{m.formula}</code>
+                                            <code style={{ color: 'var(--color-tertiary-blue)', display: 'block', fontSize: '0.85rem' }}>{m.formula}</code>
                                         </div>
-                                        <button className="btn btn-outline" style={{ padding: '0.2rem 0.6rem', color: '#ff4444', borderColor: 'transparent' }} onClick={() => removeMeasure(index)}>Remove</button>
+                                        <button className="btn" style={{ padding: '0.25rem 0.5rem', color: 'var(--color-secondary-maroon)', border: 'none', background: 'transparent' }} onClick={() => removeMeasure(index)}>
+                                            Remove
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -190,50 +192,48 @@ function MeasureBuilder({ datasetId }) {
                 </div>
             </div>
 
-            <div className="preview-section card" style={{ padding: "1.5rem", marginTop: '2rem', overflowX: 'auto' }}>
-                <h4 style={{ marginBottom: "1rem" }}>Execution Preview</h4>
+            <div className="card" style={{ marginTop: 'var(--spacing-lg)' }}>
+                <h3>Execution Preview</h3>
                 {previewData ? (
-                    <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                                {previewData.columns.map(col => {
-                                    const isMeasure = measures.some(m => m.name === col);
-                                    return (
-                                        <th key={col} style={{
-                                            padding: '1rem',
-                                            textAlign: 'left',
-                                            borderBottom: '2px solid var(--border-color)',
-                                            background: isMeasure ? 'rgba(var(--color-primary-rgb), 0.1)' : 'transparent',
-                                            color: isMeasure ? 'var(--color-primary)' : 'inherit'
-                                        }}>
-                                            {col}
-                                            {isMeasure && <div style={{ fontSize: '0.6rem', fontWeight: 400 }}>Calculated</div>}
-                                        </th>
-                                    );
-                                })}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {previewData.data.slice(0, 8).map((row, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table className="data-table">
+                            <thead>
+                                <tr>
                                     {previewData.columns.map(col => {
                                         const isMeasure = measures.some(m => m.name === col);
                                         return (
-                                            <td key={col} style={{
-                                                padding: '0.8rem',
-                                                background: isMeasure ? 'rgba(var(--color-primary-rgb), 0.02)' : 'transparent',
-                                                fontWeight: isMeasure ? 600 : 400
+                                            <th key={col} style={{
+                                                background: isMeasure ? 'rgba(0, 79, 113, 0.05)' : 'transparent',
+                                                color: isMeasure ? 'var(--color-tertiary-blue)' : 'inherit'
                                             }}>
-                                                {typeof row[col] === 'number' ? row[col].toFixed(2) : String(row[col])}
-                                            </td>
+                                                {col}
+                                                {isMeasure && <div style={{ fontSize: '0.6rem', fontWeight: 600 }}>Calculated</div>}
+                                            </th>
                                         );
                                     })}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {previewData.data.slice(0, 8).map((row, i) => (
+                                    <tr key={i}>
+                                        {previewData.columns.map(col => {
+                                            const isMeasure = measures.some(m => m.name === col);
+                                            return (
+                                                <td key={col} style={{
+                                                    background: isMeasure ? 'rgba(0, 79, 113, 0.02)' : 'transparent',
+                                                    fontWeight: isMeasure ? 600 : 400
+                                                }}>
+                                                    {typeof row[col] === 'number' ? row[col].toFixed(2) : String(row[col])}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '4rem', background: 'rgba(0,0,0,0.05)', borderRadius: '12px' }}>
+                    <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--color-background-soft)', borderRadius: 'var(--radius-lg)' }}>
                         <span style={{ fontSize: '3rem' }}>🔬</span>
                         <p style={{ color: "var(--color-text-muted)", marginTop: '1rem' }}>Click "Run Preview" to evaluate and see results.</p>
                     </div>

@@ -1,6 +1,6 @@
-## 📊 Business Intelligence & Analytics Platform
+## 📊 BOC Data Visualization AND BI Platform
 
-- A web-based Business Intelligence (BI) and Analytics Platform that enables users to upload datasets, perform data preparation, create calculated measures, generate interactive visualizations, build dashboards, and export analytical reports.
+- A web-based BOC Data Visualization  and BI Platform that enables users to upload datasets, perform data preparation, create calculated measures, generate interactive visualizations, build dashboards, and export analytical reports.
 
 - The system is designed similar to modern BI tools such as Microsoft Power BI and Tableau, supporting a complete analytics workflow from data ingestion to reporting.
 

@@ -129,8 +129,8 @@ function Dashboard({ datasetId, initialData }) {
                         <button onClick={clearFilters} className="btn btn-outline" style={{ color: 'var(--color-error)' }}>🧹 Clear Filters</button>
                     )}
                     <button onClick={addChart} className="btn btn-primary">➕ Add Chart</button>
-                    <button onClick={downloadAsPNG} className="btn btn-secondary" style={{ backgroundColor: 'var(--color-tertiary)', color: 'white' }}>🖼️ Download PNG</button>
-                    <button onClick={saveDashboard} className="btn btn-success" style={{ backgroundColor: 'var(--color-success)', color: 'white' }}>💾 Save Dashboard</button>
+                    <button onClick={downloadAsPNG} className="btn btn-primary">🖼️ Download PNG</button>
+                    <button onClick={saveDashboard} className="btn btn-success">💾 Save Dashboard</button>
                 </div>
             </div>
 

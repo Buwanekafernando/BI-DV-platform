@@ -21,6 +21,8 @@
   --color-text-main: var(--color-black);
   --color-text-muted: #4B5563;
   --color-error: var(--color-secondary-maroon);
+  --color-success: #10B981;
+  --color-success-hover: #059669;
 
   /* Spacing (16px–24px grid) */
   --spacing-xs: 4px;

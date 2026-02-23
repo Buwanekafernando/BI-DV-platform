@@ -99,7 +99,7 @@ function MainApp() {
             {!datasetId ? (
               <div className="welcome-section">
                 <div className="card" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center', padding: '4rem var(--spacing-lg)' }}>
-                  <h1 style={{ fontSize: '2.5rem', color: 'var(--color-secondary-maroon)', marginBottom: 'var(--spacing-md)' }}>Enterprise Analytics Platform</h1>
+                  <h1 style={{ fontSize: '2.5rem', color: 'var(--color-secondary-maroon)', marginBottom: 'var(--spacing-md)' }}>BOC Analytics Platform</h1>
                   <p style={{ color: 'var(--color-text-muted)', fontSize: '1.15rem', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem' }}>
                     Unlock insights from your financial data with our secure, high-performance business intelligence system.
                   </p>

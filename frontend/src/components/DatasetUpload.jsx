@@ -67,10 +67,9 @@ function DatasetUpload({ onUploadSuccess }) {
                 <button
                     onClick={handleUpload}
                     disabled={loading}
-                    className={`btn ${!file ? 'btn-secondary' : 'btn-primary'}`}
+                    className="btn btn-primary"
                     style={{
                         width: '100%',
-                        backgroundColor: !file ? '#6c757d' : 'var(--color-primary)',
                         cursor: loading ? 'not-allowed' : 'pointer'
                     }}
                 >

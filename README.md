@@ -1,79 +1,208 @@
-# BOC Data Visualization Platform
+## 📊 BOC Data Visualization AND BI Platform
 
-A comprehensive Business Intelligence (BI) platform for data analysis, visualization, and reporting, similar to Power BI.
+- A web-based BOC Data Visualization  and BI Platform that enables users to upload datasets, perform data preparation, create calculated measures, generate interactive visualizations, build dashboards, and export analytical reports.
 
-## Architecture
+- The system is designed similar to modern BI tools such as Microsoft Power BI and Tableau, supporting a complete analytics workflow from data ingestion to reporting.
 
-- **Backend**: FastAPI with Microsoft SQL Server database
-- **Frontend**: React with Vite
-- **Data Processing**: Pandas for in-memory analytics
-- **Authentication**: JWT-based user management
+## 🚀 Features
 
-## Features
+-📂 Dataset Upload (CSV support)
 
-- Dataset upload and management (CSV files)
-- Data profiling and statistics
-- Interactive querying with filters and aggregations
-- Multiple chart types (bar, line, pie, scatter, heatmap)
-- Dashboard creation and sharing
-- PDF and CSV report generation
-- Advanced analytics (anomaly detection, forecasting, trend analysis)
+-🔍 Automatic Data Profiling
 
-## Tech Stack
+-🛠 Data Preparation (Create Calculated Columns)
 
-### Backend
-- FastAPI
-- SQLAlchemy with pyodbc
-- Microsoft SQL Server
-- Pandas, NumPy
-- Matplotlib, Seaborn
-- ReportLab
+-📐 Data Modeling (Custom Measures)
 
-### Frontend
-- React
-- Vite
-- Chart.js or similar for visualizations
+-📊 Interactive Chart Creation (Bar, Line, etc.)
 
-## Setup
+-📋 Dashboard Builder (Multi-chart layout)
 
-### Prerequisites
-- Python 3.9+
-- Node.js 16+
-- Microsoft SQL Server (or Docker)
-- ODBC Driver 18 for SQL Server
+-📤 Export to PNG and PDF
 
-### Database Setup
-1. Install Microsoft SQL Server or run with Docker:
-```bash
-docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourPassword123" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
-```
+-🗄 Microsoft SQL Server Integration
 
-2. Create database:
-```sql
-CREATE DATABASE boc_bi_platform;
-```
+-⚡ FastAPI Backend with REST APIs
 
-### Backend Setup
-1. Navigate to backend directory
-2. Install dependencies: `pip install -r requirements.txt`
-3. Configure environment variables in `.env`
-4. Initialize database: `python init_db.py`
-5. Run server: `uvicorn main:app --reload`
+-🎨 React-based Professional UI
 
-### Frontend Setup
-1. Navigate to frontend directory
-2. Install dependencies: `npm install`
-3. Run development server: `npm run dev`
+## 🏗 Tech Stack
+-Frontend
 
-## Migration from PostgreSQL
+  - React (JavaScript)
 
-This project has been migrated from PostgreSQL to Microsoft SQL Server:
+  - Axios (API communication)
 
-- UUID fields → UNIQUEIDENTIFIER with NEWID()
-- JSONB fields → NVARCHAR(MAX) with JSON serialization
-- TIMESTAMP → DATETIME2
-- Updated SQLAlchemy models and raw queries for MSSQL compatibility
+  - CSS / Custom Styling
 
+  - Charting Library (e.g., Chart.js or Recharts)
+
+- Backend
+
+  - FastAPI (Python)
+
+  - Pandas (Data Processing & Query Engine)
+
+  - SQLAlchemy (ORM)
+
+  - Uvicorn (ASGI Server)
+
+## Database
+
+  - Microsoft SQL Server (MSSQL)
+
+  - Reporting
+
+  - ReportLab (PDF generation)
+
+## 📦 System Architecture
+
+Frontend (React)
+⬇ REST API
+Backend (FastAPI)
+⬇
+Data Processing Engine (Pandas)
+⬇
+Microsoft SQL Server Database
+
+## 💻 Prerequisites
+
+Before running the project, ensure the following are installed:
+
+1. Node.js (v18+ recommended)
+
+Download: https://nodejs.org/
+
+2. Python (v3.9+ recommended)
+
+Download: https://www.python.org/
+
+3. Microsoft SQL Server
+
+Install:
+
+SQL Server
+
+SQL Server Management Studio (SSMS)
+
+## 🔧 Installation & Setup
+1️⃣ Clone the Repository
+git clone https://github.com/your-username/bi-analytics-platform.git
+cd bi-analytics-platform
+
+## ⚙ Backend Setup (FastAPI)
+1. Navigate to backend folder
+cd backend
+
+2. Create virtual environment
+python -m venv venv
+
+
+Activate virtual environment:
+
+Windows:
+
+venv\Scripts\activate
+
+
+Mac/Linux:
+
+source venv/bin/activate
+
+3. Install dependencies
+pip install -r requirements.txt
+
+
+If requirements.txt is not available:
+
+pip install fastapi uvicorn pandas sqlalchemy pyodbc reportlab python-multipart
+
+4. Configure Database Connection
+
+Update the database connection string in your configuration file:
+
+DATABASE_URL = "mssql+pyodbc://username:password@server/database?driver=ODBC+Driver+17+for+SQL+Server"
+
+
+Ensure:
+
+Database is created
+
+Tables are migrated
+
+ODBC Driver for SQL Server is installed
+
+5. Run Backend Server
+uvicorn main:app --reload
+
+
+Backend will run at:
+
+http://127.0.0.1:8000
+
+
+Swagger API Docs:
+
+http://127.0.0.1:8000/docs
+
+## 🌐 Frontend Setup (React)
+1. Navigate to frontend folder
+cd frontend
+
+2. Install dependencies
+npm install
+
+3. Start development server
+npm start
+
+
+Frontend will run at:
+
+http://localhost:3000
+
+▶ How to Use the System
+
+Open the frontend in your browser.
+
+Upload a CSV dataset.
+
+Perform Data Preparation (create calculated columns if needed).
+
+Create Data Modeling measures.
+
+Build charts by selecting dimensions and measures.
+
+Add charts to dashboards.
+
+Export dashboards as PNG or PDF.
+
+## 📁 Project Structure
+bi-analytics-platform/
+│
+├── backend/
+│   ├── main.py
+│   ├── models/
+│   ├── services/
+│   ├── routes/
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   ├── components/
+│   ├── services/
+│   └── package.json
+│
+└── README.md
+
+## 🛠 Development Notes
+
+Currently runs in localhost development environment.
+
+Designed to be deployable as a full enterprise software system.
+
+Measures and calculated columns are stored as metadata.
+
+Raw datasets remain unchanged.
 ## License
 
 MIT
